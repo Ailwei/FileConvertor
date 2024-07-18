@@ -277,15 +277,15 @@ router.get('/download/:filename', verifyUser, (req, res) => {
     }
 
     if (!files || files.length === 0) {
+      console.log(`File not found: ${filename}`);
       return res.status(404).json({ message: 'File not found' });
     }
 
-    console.log(`Downloading file: ${filename}`);
-
+    const file = files[0];
     const readstream = gfsBucket.openDownloadStreamByName(filename);
 
-    res.set('Content-Type', files[0].contentType);
-    res.set('Content-Disposition', `attachment; filename="${files[0].filename}"`);
+    res.set('Content-Type', file.contentType);
+    res.set('Content-Disposition', `attachment; filename="${file.filename}"`);
 
     readstream.on('error', (err) => {
       console.error('Error streaming file:', err);
@@ -293,16 +293,17 @@ router.get('/download/:filename', verifyUser, (req, res) => {
     });
 
     readstream.on('data', (chunk) => {
-      console.log(`Downloading ${chunk.length} bytes...`);
+      console.log(`Streaming data chunk of size: ${chunk.length}`);
     });
 
     readstream.on('end', () => {
-      console.log('File download complete.');
+      console.log(`Finished streaming file: ${filename}`);
     });
 
     readstream.pipe(res);
   });
 });
+
 
 router.put('/updatefiles/:filename', verifyUser, async (req, res) => {
   const oldFilename = req.params.filename;
