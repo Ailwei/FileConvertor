@@ -155,13 +155,44 @@ router.get('/user/:userId', verifyUser, async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
+     
+      console.log('First Name:', user.firstname);
+      console.log('Last Name:', user.lastname);
+      console.log('Email:', user.email);
+      
       res.json({
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
       });
     } catch (error) {
+     
+      console.error('Error fetching user details:', error);
       res.status(500).json({ message: 'Error fetching user details', error });
+    }
+  });
+  
+  router.put('/profile', verifyUser, async (req, res) => {
+    
+    const { userId,firstname, lastname, email } = req.body;
+  
+    try {
+
+      const updatedUser = await User.findByIdAndUpdate(userId, {
+      
+        firstname,
+        lastname,
+        email
+      }, { new: true }); 
+  
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      res.status(200).json({ user: updatedUser });
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
   
