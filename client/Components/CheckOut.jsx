@@ -1,0 +1,231 @@
+import { useEffect, useState } from 'react';
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import PropTypes from 'prop-types';
+import axios from 'axios';
+import jwt_decode from 'jwt-decode';
+
+const countries = [
+  { code: 'US', name: 'United States' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'ZA', name: 'South Africa' },
+];
+
+const CheckoutForm = ({ plan, closeModal}) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [clientSecret, setClientSecret] = useState('');
+  const [price, setPrice] = useState(0);
+  const [billingDetails, setBillingDetails] = useState({
+    fullname: '',
+    email: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    country: '',
+  });
+  const [decodedToken, setDecodedToken] = useState(null);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = sessionStorage.getItem('authToken');
+        if (token) {
+          const decoded = jwt_decode(token);
+          setDecodedToken(decoded);
+
+          const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
+          const { firstname, lastname, email } = userDetailsResponse.data;
+          setBillingDetails((prevDetails) => ({
+            ...prevDetails,
+            fullname: `${firstname} ${lastname}`,
+            email,
+          }));
+
+          const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
+            plan,
+            userId: decoded.userId,
+          });
+
+          setClientSecret(paymentIntentResponse.data.clientSecret);
+          setPrice(paymentIntentResponse.data.amount);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchUserDetails();
+  }, [plan]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setBillingDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!stripe || !elements || !clientSecret || !decodedToken) {
+      return;
+    }
+
+    try {
+      let response;
+
+      if (plan === 'free-trial') {
+        const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
+          payment_method: {
+            card: elements.getElement(CardElement),
+            billing_details: {
+              name: billingDetails.fullname,
+              email: billingDetails.email,
+              address: {
+                line1: billingDetails.address,
+                city: billingDetails.city,
+                postal_code: billingDetails.postalCode,
+                country: billingDetails.country,
+              },
+            },
+          },
+        });
+
+        if (error) {
+          console.error('Setup failed:', error);
+          return;
+        }
+
+        response = await axios.post('http://localhost:3000/auth/update-status', {
+          userId: decodedToken.userId,
+          paymentIntentId: setupIntent.id,
+          status: 'pending',
+          billingDetails,
+        });
+      } else {
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: elements.getElement(CardElement),
+            billing_details: {
+              name: billingDetails.fullname,
+              email: billingDetails.email,
+              address: {
+                line1: billingDetails.address,
+                city: billingDetails.city,
+                postal_code: billingDetails.postalCode,
+                country: billingDetails.country,
+              },
+            },
+          },
+        });
+
+        if (error) {
+          console.error('Payment failed:', error);
+          return;
+        }
+
+        response = await axios.post('http://localhost:3000/auth/update-status', {
+          userId: decodedToken.userId,
+          paymentIntentId: paymentIntent.id,
+          status: 'paid',
+          billingDetails,
+        });
+      }
+
+      if (response.status === 200) {
+        if (plan === 'free-trial') {
+          alert('Free trial subscription succeeded!');
+        } else {
+          alert('Payment succeeded!');
+        }
+        closeModal();
+        window.location.href = '/dashboard';
+      }
+    } catch (updateError) {
+      console.error('Error handling payment:', updateError);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Full Name:
+        <input
+          type="text"
+          name="fullname"
+          value={billingDetails.fullname}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <label>
+        Email:
+        <input
+          type="email"
+          name="email"
+          value={billingDetails.email}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <label>
+        Address:
+        <input
+          type="text"
+          name="address"
+          value={billingDetails.address}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <label>
+        City:
+        <input
+          type="text"
+          name="city"
+          value={billingDetails.city}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <label>
+        Postal Code:
+        <input
+          type="text"
+          name="postalCode"
+          value={billingDetails.postalCode}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <label>
+        Country:
+        <select
+          name="country"
+          value={billingDetails.country}
+          onChange={handleInputChange}
+          required
+        >
+          <option value="">Select Country</option>
+          {countries.map((country) => (
+            <option key={country.code} value={country.code}>
+              {country.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <CardElement />
+      <p>Price: {price / 100} ZAR</p>
+      <button type="submit" disabled={!stripe}>Pay</button>
+    </form>
+  );
+};
+
+CheckoutForm.propTypes = {
+  plan: PropTypes.string.isRequired,
+  closeModal: PropTypes.func.isRequired,
+};
+
+export default CheckoutForm;
