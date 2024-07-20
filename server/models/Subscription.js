@@ -7,6 +7,7 @@ const SubscriptionSchema = new mongoose.Schema({
     currency: { type: String, required: true },
     intentType: { type: String, enum: ['setup', 'payment'], required: true },
     paymentIntentId: { type: String, required: true },
+    conversionCount: { type: Number, default: 0 },
     status: { type: String, required: true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date, required: true },
