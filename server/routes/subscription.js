@@ -369,12 +369,15 @@ router.get('/current-subscription/:userId', verifyUser, async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const subscription = await Subscription.findOne({ userId, status: { $in: ['paid', 'pending'] } })
+    const subscription = await Subscription.findOne({ userId })
       .sort({ createdAt: -1 })
       .exec();
 
     if (!subscription) {
-      return res.status(404).json({ message: 'No active subscription found' });
+      return res.status(200).json({ 
+        activePlan: null,
+        message: 'No active subscription found'
+      });
     }
 
     const currentDate = new Date();
@@ -385,18 +388,20 @@ router.get('/current-subscription/:userId', verifyUser, async (req, res) => {
       plan: subscription.plan,
       amount: subscription.amount,
       currency: subscription.currency,
-      status: subscription.status,
+      status: subscription.status === 'paid' ? 'paid' : 'pending',
       startDate: subscription.startDate,
       endDate: subscription.endDate,
       daysRemaining: daysRemaining,
     };
 
-    res.status(200).json(subscriptionDetails);
+    res.status(200).json({ activePlan: subscriptionDetails });
   } catch (error) {
     console.error('Error fetching subscription details:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
 router.delete('/cancel-subscription/:userId', verifyUser, async (req, res) => {
   const { userId } = req.params;
 
