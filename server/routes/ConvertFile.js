@@ -100,20 +100,32 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
+
     const { originalname, filename, mimetype, size } = req.file;
     const format = req.body.format;
     let convertedFileName, convertedFilePath;
-    const { plan, conversionCount } = req.subscription;
-   
+    const { plan } = req.subscription;
 
-    if (plan === 'free-trial' && conversionCount >= 10) {
+
+    let conversionLog = await ConversionLog.findOne({ userId: req.user.userId });
+
+    if (!conversionLog) {
+    
+      conversionLog = new ConversionLog({
+        userId: req.user.userId,
+        conversionCount: 0,
+      });
+    }
+
+
+    if (plan === 'free-trial' && conversionLog.conversionCount >= 10) {
       return res.status(403).json({ error: 'Free plan allows up to 10 conversions' });
     } else if (plan === 'basic' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg')) {
       return res.status(403).json({ error: 'Basic plan only allows document and image conversions' });
-    } else if (plan === 'basic' && conversionCount >= 20) {
+    } else if (plan === 'basic' && conversionLog.conversionCount >= 20) {
       return res.status(403).json({ error: 'Basic plan allows up to 20 conversions per month' });
-    } else if (plan === 'premium' && conversionCount === Infinity) {
-     
+    } else if (plan === 'premium' && conversionLog.conversionCount === Infinity) {
+      
     }
 
     const inputPath = path.join(__dirname, '../uploads', filename);
@@ -226,10 +238,15 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
           userId: req.user.userId,
         });
         await newFile.save();
-        const conversionLog = new ConversionLog({
+
+        const conversionLogEntry = new ConversionLog({
           userId: req.user.userId,
           fileType: format,
-        })
+        });
+        await conversionLogEntry.save();
+
+        conversionLog.conversionCount += 1;
+        conversionLog.fileType = format;
         await conversionLog.save();
 
         res.status(200).json({ message: 'File uploaded and converted successfully', file: newFile });
@@ -238,13 +255,11 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
         console.error('Error saving file to GridFS:', err);
         res.status(500).json({ error: 'Failed to save converted file to MongoDB' });
       });
-
   } catch (error) {
     console.error('Error converting file:', error);
     res.status(500).json({ error: 'Failed to convert file' });
   }
 });
-
 
 router.get('/files', verifyUser, async (req, res) => {
   try {
