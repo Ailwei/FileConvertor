@@ -1,122 +1,141 @@
-/* Home.css */
-
-body {
+/* General Landing Page Styles */
+.landing-page {
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f0f0f0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.header {
-  background-color: #333;
-  color: #fff;
-  padding: 10px 0;
-}
-
-.header .navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header .navbar-brand {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.navbar-nav {
-  list-style-type: none;
-  display: flex;
-  gap: 20px;
-}
-
-.nav-item {
-  padding: 10px;
-}
-
-.nav-link {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.hero {
-  padding: 50px 0;
-  text-align: center;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-}
-
-.pricing {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-.plan {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 20px;
-  text-align: center;
-  flex: 1;
-  max-width: 300px;
-}
-
-.plan h2 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.plan p {
-  margin-bottom: 10px;
-}
-
-.plan strong {
-  font-size: 1.5rem;
   color: #333;
 }
 
-.btn {
-  display: inline-block;
-  padding: 10px 20px;
+/* Header */
+.header {
+  border-bottom: 1px solid #eaeaea;
+}
+
+.navbar {
+  display: flex;
+  justify-content: center; /* Center align the navbar items */
+}
+
+.navbar-brand {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+}
+
+.nav-item {
+  margin: 0 10px; /* Spacing between nav items */
+}
+
+.nav-link {
+  color: #007bff;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Hero Section */
+.hero {
   background-color: #007bff;
   color: #fff;
-  text-decoration: none;
-  border-radius: 5px;
-  margin-top: 10px;
+  padding: 60px 0;
+  text-align: center; /* Center-align text in hero section */
 }
 
-.btn:hover {
-  background-color: #0056b3;
-}
-
-.about {
-  padding: 50px 0;
-  text-align: center;
-}
-
-.about h2 {
-  font-size: 2rem;
+.hero h1 {
+  font-size: 2.5rem;
   margin-bottom: 20px;
 }
 
-.about p {
-  line-height: 1.6;
+.hero p {
+  font-size: 1.25rem;
 }
 
+.pricing {
+  margin-top: 30px;
+}
+
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-body {
+  padding: 30px;
+  flex: 1;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.card-text {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  border-radius: 5px;
+  padding: 10px 20px;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* About Us Section */
+.about {
+  background-color: #f8f9fa;
+}
+
+/* Features Section */
+
+/* How It Works Section */
+.how-it-works {
+  background-color: #f8f9fa;
+}
+
+/* Footer */
 .footer {
-  background-color: #333;
-  color: #fff;
-  padding: 20px 0;
-  text-align: center;
+  border-top: 1px solid #eaeaea;
+  background-color: #f8f9fa;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+/* Key Features Cards */
+.features .card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.features .card-body {
+  padding: 20px;
+}
+
+.features .card-title {
+  font-size: 1.25rem;
+  margin-bottom: 15px;
+}
+
+.features .card-text {
+  font-size: 1rem;
+  margin-bottom: 10px;
 }
