@@ -8,8 +8,12 @@ import Dashboard from '../Components/Dashboard';
 import Home from '../Components/Home.jsx';
 import ProtectedRoute from '../Components/ProtectedRoute';
 import Subscription from '../Components/Subscription';
+import '../src/assets/app.css';
+import Plans from '../Components/Plans'
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
-
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function App() {
   const [selectedPackage, setSelectedPackage] = useState('');
@@ -22,6 +26,7 @@ function App() {
 
   return (
     <BrowserRouter>
+     <Elements stripe={stripePromise}>
       <Routes>
         <Route 
           path="/" 
@@ -42,7 +47,14 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+            path="/checkout" 
+            element={
+              <Plans plan={selectedPackage} closeModal={closeModal} />
+            } 
+          />
       </Routes>
+      </Elements>
     </BrowserRouter>
   );
 }
