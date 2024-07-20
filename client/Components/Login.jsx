@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../src/assets/Login.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+//import '../src/assets/Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -22,8 +23,6 @@ function Login() {
     axios.post("http://localhost:3000/auth/login", { email, password })
       .then(response => {
         if (response.data.status) {
-
-
           sessionStorage.setItem('authToken', response.data.token);
 
           const redirectPath = sessionStorage.getItem('redirectPath') || '/dashboard';
@@ -33,34 +32,48 @@ function Login() {
           setError('Login failed: ' + response.data.message);
         }
       })
-      .catch(err => {
+      .catch(() => {
         setError('Login failed. Please try again.');
       });
   };
 
   return (
-    <div className='login-container'>
-      <form className='login-form' onSubmit={handleLogin}>
-        <h1>Login</h1>
-        {error && <p className="error">{error}</p>}
-        <label htmlFor="email">Email:</label><br />
-        <input
-          type='email'
-          placeholder='joedoe@mail.com'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        /><br />
-        <label htmlFor="password">Password:</label><br />
-        <input
-          type='password'
-          placeholder='********'
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        /><br />
-        <button type="submit">Log In</button>
-        <p><Link to="/forgotpassword">Forgot Password</Link></p>
-        <p>Need an account? <Link to="/signup">Sign up</Link></p>
-      </form>
+    <div className="container d-flex justify-content-center align-items-center vh-100">
+      <div className="card p-4 shadow-lg" style={{ maxWidth: '400px', width: '100%' }}>
+        <h1 className="text-center mb-4">Login</h1>
+        {error && <div className="alert alert-danger">{error}</div>}
+        <form onSubmit={handleLogin}>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email:</label>
+            <input
+              type="email"
+              className="form-control"
+              id="email"
+              placeholder="joedoe@mail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">Password:</label>
+            <input
+              type="password"
+              className="form-control"
+              id="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="btn btn-primary w-100">Log In</button>
+        </form>
+        <div className="mt-3 text-center">
+          <p><Link to="/forgotpassword" className="btn btn-link">Forgot Password</Link></p>
+          <p>Need an account? <Link to="/signup" className="btn btn-link">Sign up</Link></p>
+        </div>
+      </div>
     </div>
   );
 }

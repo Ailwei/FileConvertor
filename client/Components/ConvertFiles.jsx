@@ -1,5 +1,6 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
 import '../src/assets/FileConversion.css';
 
 const FileConvert = ({ onClose }) => {
@@ -49,31 +50,49 @@ const FileConvert = ({ onClose }) => {
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
-        <h2>Convert File</h2>
-        {error && <p className="error">{error}</p>}
-        {success && <p className="success">{success}</p>}
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>File:</label>
-            <input type="file" onChange={handleFileChange} />
+    <div className="modal show d-block" tabIndex="-1" role="dialog">
+      <div className="modal-dialog" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Convert File</h5>
+            <button type="button" className="close" onClick={onClose} aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
-          <div>
-            <label>Format:</label>
-            <select value={format} onChange={handleFormatChange}>
-              <option value="">Select a format</option>
-              <option value="pdf">PDF</option>
-              <option value="docx">DOCX</option>
-              <option value="mp3">MP3</option>
-              <option value="mp4">MP4</option>
-              <option value="jpeg">JPEG</option>
-              <option value="png">PNG</option>
-            </select>
+          <div className="modal-body">
+            {error && <div className="alert alert-danger">{error}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="file">File:</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  id="file"
+                  onChange={handleFileChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="format">Format:</label>
+                <select
+                  id="format"
+                  className="form-control"
+                  value={format}
+                  onChange={handleFormatChange}
+                >
+                  <option value="">Select a format</option>
+                  <option value="pdf">PDF</option>
+                  <option value="docx">DOCX</option>
+                  <option value="mp3">MP3</option>
+                  <option value="mp4">MP4</option>
+                  <option value="jpeg">JPEG</option>
+                  <option value="png">PNG</option>
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary">Convert</button>
+            </form>
           </div>
-          <button type="submit">Convert</button>
-        </form>
+        </div>
       </div>
     </div>
   );

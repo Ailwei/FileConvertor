@@ -1,9 +1,12 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import PropTypes from 'prop-types';
+import 'bootstrap/dist/css/bootstrap.min.css';
+//import '../src/assets/UpdateProfile.css';
 
 const UpdateProfile = ({ onClose }) => {
+  const [error, setError] = useState('');
   const [userDetails, setUserDetails] = useState({
     firstname: '',
     lastname: '',
@@ -26,7 +29,7 @@ const UpdateProfile = ({ onClose }) => {
           });
         }
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        setError('Error fetching user details');
       }
     };
 
@@ -58,50 +61,71 @@ const UpdateProfile = ({ onClose }) => {
       if (response.status === 200) {
         alert('Profile updated successfully!');
         onClose();
-      }
+      } 
     } catch (error) {
-      console.error('Error updating profile:', error);
+      if (error.response && error.response.status === 403) {
+        setError('Email address already exists');
+      } else if (error.response && error.response.status === 404) {
+        setError('User not found');
+      } else {
+        setError('Error updating profile');
+      }
     }
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
-        <h2>Update Profile</h2>
-        <form onSubmit={handleSubmit}>
-          <label>
-            First Name:
-            <input
-              type="text"
-              name="firstname"
-              value={userDetails.firstname}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            Last Name:
-            <input
-              type="text"
-              name="lastname"
-              value={userDetails.lastname}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            Email:
-            <input
-              type="email"
-              name="email"
-              value={userDetails.email}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <button type="submit">Update Profile</button>
-        </form>
+    <div className="modal show d-block" tabIndex="-1" role="dialog">
+      <div className="modal-dialog" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Update Profile</h5>
+            <button type="button" className="close" onClick={onClose} aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div className="modal-body">
+            {error && <div className="alert alert-danger">{error}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="firstname">First Name:</label>
+                <input
+                  type="text"
+                  id="firstname"
+                  name="firstname"
+                  className="form-control"
+                  value={userDetails.firstname}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="lastname">Last Name:</label>
+                <input
+                  type="text"
+                  id="lastname"
+                  name="lastname"
+                  className="form-control"
+                  value={userDetails.lastname}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email:</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  className="form-control"
+                  value={userDetails.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">Update Profile</button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

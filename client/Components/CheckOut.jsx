@@ -3,6 +3,8 @@ import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
+import '../src/assets/Checkout.css';
+
 
 const countries = [
   { code: 'US', name: 'United States' },
@@ -11,7 +13,7 @@ const countries = [
   { code: 'ZA', name: 'South Africa' },
 ];
 
-const CheckoutForm = ({ plan, closeModal}) => {
+const CheckoutForm = ({ plan, closeModal }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [clientSecret, setClientSecret] = useState('');
@@ -149,77 +151,98 @@ const CheckoutForm = ({ plan, closeModal}) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Full Name:
-        <input
-          type="text"
-          name="fullname"
-          value={billingDetails.fullname}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-      <label>
-        Email:
-        <input
-          type="email"
-          name="email"
-          value={billingDetails.email}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-      <label>
-        Address:
-        <input
-          type="text"
-          name="address"
-          value={billingDetails.address}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-      <label>
-        City:
-        <input
-          type="text"
-          name="city"
-          value={billingDetails.city}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-      <label>
-        Postal Code:
-        <input
-          type="text"
-          name="postalCode"
-          value={billingDetails.postalCode}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-      <label>
-        Country:
-        <select
-          name="country"
-          value={billingDetails.country}
-          onChange={handleInputChange}
-          required
-        >
-          <option value="">Select Country</option>
-          {countries.map((country) => (
-            <option key={country.code} value={country.code}>
-              {country.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <CardElement />
-      <p>Price: {price / 100} ZAR</p>
-      <button type="submit" disabled={!stripe}>Pay</button>
-    </form>
+    <div className="container">
+      <h2 className="mb-4">Checkout</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="fullname">Full Name:</label>
+          <input
+            type="text"
+            id="fullname"
+            name="fullname"
+            className="form-control"
+            value={billingDetails.fullname}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            className="form-control"
+            value={billingDetails.email}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="address">Address:</label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            className="form-control"
+            value={billingDetails.address}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="city">City:</label>
+          <input
+            type="text"
+            id="city"
+            name="city"
+            className="form-control"
+            value={billingDetails.city}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="postalCode">Postal Code:</label>
+          <input
+            type="text"
+            id="postalCode"
+            name="postalCode"
+            className="form-control"
+            value={billingDetails.postalCode}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="country">Country:</label>
+          <select
+            id="country"
+            name="country"
+            className="form-control"
+            value={billingDetails.country}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Select Country</option>
+            {countries.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group mt-4">
+          <CardElement />
+        </div>
+        <div className="mt-3">
+          <p>Price: {price / 100} ZAR</p>
+          <button type="submit" className="btn btn-primary" disabled={!stripe}>
+            Pay
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../src/assets/ForgotPassword.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+//import '../src/assets/ForgotPassword.css';
 
 function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -32,20 +33,29 @@ function ForgotPassword() {
     };
 
     return (
-        <div className='forgotPassword-container'>
-            <h1>Forgot Password</h1>
-            <form className='forgotPassword-form' onSubmit={handleForgetPassword}>
-            {error && <p className="error-message">{error}</p>}
-                <label htmlFor="email">Email:</label> <br />
-                <input
-                    type='email'
-                    placeholder='joedoe@mail.com'
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                /> 
-                <button type="submit">Send</button>
-            </form>
-            <p>Remembered your password? <Link to="/login">Login</Link></p>
+        <div className="container d-flex justify-content-center align-items-center vh-100">
+            <div className="card p-4 shadow-lg" style={{ maxWidth: '400px', width: '100%' }}>
+                <h1 className="text-center mb-4">Forgot Password</h1>
+                {error && <div className="alert alert-danger">{error}</div>}
+                <form onSubmit={handleForgetPassword}>
+                    <div className="mb-3">
+                        <label htmlFor="email" className="form-label">Email:</label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            id="email"
+                            placeholder="joedoe@mail.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary w-100">Send</button>
+                    <p className="mt-3 text-center">
+                        Remembered your password? <Link to="/login" className="btn btn-link">Login</Link>
+                    </p>
+                </form>
+            </div>
         </div>
     );
 }

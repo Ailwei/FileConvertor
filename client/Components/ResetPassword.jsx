@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import "../src/assets/ResetPassword.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+//import '../src/assets/ResetPassword.css';
 
 function ResetPassword() {
     const { token } = useParams();
@@ -14,7 +15,6 @@ function ResetPassword() {
 
         axios.post(`http://localhost:3000/auth/reset-password/${token}`, { password })
             .then(response => {
-                console.log('Response:', response.data);
                 if (response.data.message === "updated record") {
                     alert("Password updated successfully");
                     navigate('/login');
@@ -33,20 +33,29 @@ function ResetPassword() {
     };
 
     return (
-        <div className='forgotPassword-container'>
-            <h1>Reset Password</h1>
-            <form className='forgotPassword-form' onSubmit={handleResetPassword}>
-            {error && <p className="error-message">{error}</p>}
-                <label htmlFor="password">Password:</label> <br />
-                <input 
-                    type='password' 
-                    placeholder='*********' 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                /> <br />
-                <button type="submit">Reset Password</button>               
-            </form>
-            <p>Remembered your password? <Link to="/login">Login</Link></p>
+        <div className="container d-flex justify-content-center align-items-center vh-100">
+            <div className="card p-4 shadow-lg" style={{ maxWidth: '400px', width: '100%' }}>
+                <h1 className="text-center mb-4">Reset Password</h1>
+                {error && <div className="alert alert-danger">{error}</div>}
+                <form onSubmit={handleResetPassword}>
+                    <div className="mb-3">
+                        <label htmlFor="password" className="form-label">Password:</label>
+                        <input 
+                            type='password' 
+                            className='form-control'
+                            id="password"
+                            placeholder='*********' 
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)} 
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary w-100">Reset Password</button>
+                    <p className="mt-3 text-center">
+                        Remembered your password? <Link to="/login" className="btn btn-link">Login</Link>
+                    </p>
+                </form>
+            </div>
         </div>
     );
 }

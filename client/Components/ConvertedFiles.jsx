@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import '../src/assets/convertedFiles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ConvertedFiles = () => {
   const [files, setFiles] = useState([]);
@@ -77,7 +79,7 @@ const ConvertedFiles = () => {
   };
 
   return (
-    <div>
+    <div className="converted-files">
       <h1>Converted Files</h1>
       {files.length > 0 ? (
         <ul>
@@ -92,10 +94,9 @@ const ConvertedFiles = () => {
                       type="text"
                       value={newFilename}
                       onChange={handleFilenameChange}
-                      style={{ marginLeft: '10px', width: '150px' }}
                     />
-                    <button onClick={() => handleSaveClick(file)} style={{ marginLeft: '5px' }}>Save</button>
-                    <button onClick={handleCancelClick} style={{ marginLeft: '5px' }}>Cancel</button>
+                    <button onClick={() => handleSaveClick(file)}>Save</button>
+                    <button onClick={handleCancelClick}>Cancel</button>
                   </>
                 ) : (
                   file.filename
@@ -108,9 +109,9 @@ const ConvertedFiles = () => {
                 <a href={`http://localhost:3000/auth/download/${file.filename}`} target="_blank" rel="noopener noreferrer">
                   View File
                 </a>
-                <a href="#" onClick={() => handleDeleteClick(file)} style={{ marginRight: '10px' }}>Delete</a>
+                <a href="#" onClick={() => handleDeleteClick(file)}>Delete</a>
                 {editingFilename !== file.filename && (
-                  <a href="#" onClick={() => handleEditClick(file)} style={{ marginRight: '10px' }}>Edit</a>
+                  <a href="#" onClick={() => handleEditClick(file)}>Edit</a>
                 )}
               </div>
             </li>

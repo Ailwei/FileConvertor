@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
+//import '../src/assets/subscriptionDetails.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const SubscriptionDetails = () => {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
@@ -52,26 +53,29 @@ const SubscriptionDetails = () => {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <p className="text-center">Loading...</p>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p className="text-danger text-center">{error}</p>;
   }
 
   if (!subscription) {
-    return <p>No active subscription found</p>;
+    return <p className="text-center">No active subscription found</p>;
   }
 
   return (
-    <div>
-      <h2>Current Subscription Details</h2>
-      <p>Plan: {subscription.plan}</p>
-      <p>Amount: {subscription.amount / 100} ZAR</p>
-      <p>Status: {subscription.status}</p>
-      <p>Expiry Date: {new Date(subscription.endDate).toLocaleDateString()}</p>
-
-      <button onClick={handleCancelSubscription}>Cancel Subscription</button>
+    <div className="container mt-4">
+      <div className="card p-4 shadow-sm">
+        <h2 className="card-title mb-4">Current Subscription Details</h2>
+        <div className="mb-3">
+          <p><strong>Plan:</strong> {subscription.plan}</p>
+          <p><strong>Amount:</strong> {subscription.amount / 100} ZAR</p>
+          <p><strong>Status:</strong> {subscription.status}</p>
+          <p><strong>Expiry Date:</strong> {new Date(subscription.endDate).toLocaleDateString()}</p>
+        </div>
+        <button className="btn btn-danger" onClick={handleCancelSubscription}>Cancel Subscription</button>
+      </div>
     </div>
   );
 };

@@ -8,6 +8,8 @@ import Subscription from '../Components/Subscription';
 import SubscriptionDetails from '../Components/SubscriptionDetails';
 import '../src/assets/Dashboard.css';
 import PropTypes from 'prop-types';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Plans from  '../Components/Plans';
 
 axios.defaults.withCredentials = true;
 
@@ -67,26 +69,29 @@ const Dashboard = ({ selectedPackage }) => {
   };
 
   return (
-    <div className="dashboard">
+    <div className="dashboard container">
       <header className="header">
-        <div className="container">
-          <nav className="navbar">
-            <div className="navbar-brand">
-              <h1 className="logo">File Conversion Service</h1>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <div className="container-fluid">
+            <span className="navbar-brand">File Conversion Service</span>
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarNav">
+              <ul className="navbar-nav ml-auto">
+                <li className="nav-item">
+                  <button className="btn btn-primary me-2" onClick={() => setShowFileConvert(true)}>Convert Files</button>
+                </li>
+                <li className="nav-item">
+                  <button className="btn btn-secondary me-2" onClick={() => setShowUpdateProfile(true)}>Update Profile</button>
+                </li>
+                <li className="nav-item">
+                  <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+                </li>
+              </ul>
             </div>
-            <ul className="navbar-nav">
-              <li className="nav-item">
-                <button className="nav-btn" onClick={() => setShowFileConvert(true)}>Convert Files</button>
-              </li>
-              <li className="nav-item">
-                <button className="nav-btn" onClick={() => setShowUpdateProfile(true)}>Update Profile</button>
-              </li>
-              <li className="nav-item">
-                <button className="logout-btn" onClick={handleLogout}>Logout</button>
-              </li>
-            </ul>
-          </nav>
-        </div>
+          </div>
+        </nav>
       </header>
 
       {showFileConvert && <FileConvert onClose={() => setShowFileConvert(false)} />}
@@ -94,52 +99,27 @@ const Dashboard = ({ selectedPackage }) => {
       {showSubscriptionModal && (
         <Subscription plan={selectedPackage} closeModal={closeModal} />
       )}
-
-      <section className="section">
-        <h2>Project Overview</h2>
-        <p>Key Features:</p>
-        <ul>
-          <li>User authentication and authorization</li>
-          <li>File upload and conversion</li>
-          <li>Subscription management</li>
-          <li>Real-time notifications</li>
-          <li>Email notifications</li>
-        </ul>
+      <section>
+     <Plans/>
       </section>
 
-      <section className="section">
-        <h2>User Management</h2>
-        <p>Total Users: 1000</p>
-        <p>Active Users: 800</p>
-        <p>New Signups: 50/day</p>
-        <ul>
-          <li>Integrate Auth0 for user authentication</li>
-          <li>Implement registration and login forms</li>
-          <li>Develop user profile pages</li>
-          <li>Manage user roles (free trial, basic, premium)</li>
-        </ul>
-      </section>
-
-      <section className="section">
-        <ConvertedFiles />
-      </section>
-
-      <section className="section">
-        <h2>Notifications</h2>
-        <p>Total Emails Sent: 2000</p>
-        <p>Email Open Rate: 60%</p>
-        <p>Total Real-Time Notifications: 500</p>
-        <p>Delivery Success Rate: 99%</p>
-        <ul>
-          <li>Integrate SendGrid for email notifications</li>
-          <li>Set up Pusher for real-time notifications</li>
-          <li>Develop notification preferences for users</li>
-        </ul>
-      </section>
-
-      <section className="section">
-        <h2>Subscription Management</h2>
-        <SubscriptionDetails />
+      <section className="my-5">
+        <div className="row">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <ConvertedFiles />
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <SubscriptionDetails />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );

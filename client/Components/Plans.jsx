@@ -24,13 +24,13 @@ const plans = [
   {
     name: 'Basic',
     planType: 'basic',
-    price: 5000, // Price in cents
+    price: 5000,
     description: 'Basic plan with essential features. Monthly billing at 50.00 ZAR.',
   },
   {
     name: 'Premium',
     planType: 'premium',
-    price: 35000, // Price in cents
+    price: 35000,
     description: 'Premium plan with all features. Monthly billing at 350.00 ZAR.',
   },
 ];
@@ -52,7 +52,7 @@ const Plans = () => {
   const [activePlan, setActivePlan] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState(''); // New state to manage payment status
+  const [paymentStatus, setPaymentStatus] = useState('');
 
   useEffect(() => {
     const token = sessionStorage.getItem('authToken');
@@ -87,7 +87,7 @@ const Plans = () => {
           });
 
           setClientSecret(paymentIntentResponse.data.clientSecret);
-          setPaymentStatus(paymentIntentResponse.data.status || ''); // Set payment status if available
+          setPaymentStatus(paymentIntentResponse.data.status || '');
         } catch (error) {
           console.error('Error fetching client secret:', error);
         }
