@@ -198,7 +198,9 @@ const Plans = () => {
       console.error('Error handling payment:', updateError);
     }
   };
-
+const formatPrice = (price) => {
+    return price === 0 ? 'Free' : `${(price / 100).toFixed(2)} ZAR`;
+  }
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Select Your Plan</h2>
@@ -318,11 +320,11 @@ const Plans = () => {
               <label htmlFor="card-element" className="form-label">Credit or Debit Card</label>
               <CardElement id="card-element" />
             </div>
-            {/*<p>Price: {Price / 100} ZAR</p>*/}
+          <p>{formatPrice}</p>
             <Button variant="primary" type="submit" disabled={!stripe}>
               {selectedPlan && selectedPlan.planType === 'free-trial'
                 ? 'Start Free Trial'
-                : 'Pay and Subscribe'}
+                : 'Pay'}
             </Button>
             {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
           </form>
