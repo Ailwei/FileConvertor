@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import '../src/assets/Home.css';
-//import 'bootstrap/dist/css/bootstrap.min.css';
+import '../src/assets/app.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Home = ({ setSelectedPackage, isLoggedIn }) => {
   const navigate = useNavigate();
