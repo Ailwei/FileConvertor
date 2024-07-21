@@ -119,20 +119,25 @@ function calculateEndDate(plan) {
 router.post('/update-status', verifyUser, async (req, res) => {
   const { userId, paymentIntentId, status, billingDetails } = req.body;
 
-  if (!userId || !paymentIntentId || !status || !billingDetails) {
+  if (!userId || !status || !billingDetails) {
     console.error('Missing required fields in request body:', req.body);
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
-    let subscription = await Subscription.findOne({ userId, paymentIntentId });
+    
+    let subscription = await Subscription.findOne({ userId });
 
     if (!subscription) {
-      console.error('Subscription not found for user:', userId, 'and paymentIntentId:', paymentIntentId);
-      return res.status(404).json({ message: 'Subscription not found' });
+      subscription = new Subscription({ userId });
     }
+    if (status === 'trial') {
+      subscription.status = 'trial';
+    } else if (status === 'paid') {
+      if (!paymentIntentId) {
+        return res.status(400).json({ message: 'Missing payment intent ID' });
+      }
 
-    if (status === 'paid') {
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       if (!paymentIntent || paymentIntent.status !== 'succeeded') {
         console.error('Payment intent not succeeded or not found:', paymentIntentId);
@@ -140,8 +145,6 @@ router.post('/update-status', verifyUser, async (req, res) => {
       }
 
       subscription.status = 'paid';
-    } else {
-      subscription.status = status;
     }
 
     await subscription.save();
@@ -179,17 +182,16 @@ router.post('/update-status', verifyUser, async (req, res) => {
     if (status === 'paid') {
       emailSubject = 'Subscription Confirmation';
       emailText = `Dear ${fullName},\n\nYour subscription has been successfully processed.\n\nThank you for choosing our service!`;
+    } else if (status === 'trial') {
+      emailSubject = 'Free Trial Confirmation';
+      emailText = `Dear ${fullName},\n\nYour free trial has been successfully activated.\n\nEnjoy your trial period!`;
     } else if (status === 'pending') {
       emailSubject = 'Subscription Confirmation Pending';
       emailText = `Dear ${fullName},\n\nYour subscription is currently pending and will be activated shortly.\n\nThank you for choosing our service!`;
     }
 
-    if (status === 'paid' || status === 'pending') {
-      sendConfirmationEmail(
-        user.email,
-        emailSubject,
-        emailText,
-      );
+    if (status === 'paid' || status === 'trial' || status === 'pending') {
+      sendConfirmationEmail(user.email, emailSubject, emailText);
     }
 
     res.json({ message: 'Subscription status updated successfully' });
