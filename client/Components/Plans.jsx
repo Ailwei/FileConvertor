@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -19,30 +19,28 @@ const plans = [
     name: 'Free Trial',
     planType: 'free-trial',
     price: 0,
-    description:'Convert up to 10 files',
+    description: 'Convert up to 10 files during trial time',
+    detail: 'Convert Documents pdf/docx',
+    detail1: 'Convert Video/Audio  mp3/mp4',
+    detail2: 'Convert Images png/jpeg'
 
-      detail1: 'Convert documents(pdf, docx)',
-      detail2: 'Convert images(png,jpeg)',
-      detail3: 'Convert video/Audio(mp4, mp3)',
-    
   },
   {
     name: 'Basic',
     planType: 'basic',
     price: 5000,
-    description: 'Convert up to 50 files',
-    detail1: 'Convert documents (pdf, docx)',
-    detail2: 'Convert images (png, jpeg)',
-   
+    description: 'Convert up to 50 files during trial time',
+    detail: 'Convert Documents pdf/docx',
+    detail2: 'Convert Images png/jpeg',
   },
   {
     name: 'Premium',
     planType: 'premium',
     price: 35000,
-    description: 'Unlimited conversion of files',
-   detail1: 'Convert documents (pdf, docx)',
-    detail2: 'Convert images (png, jpeg)',
-    detail3: 'Convert video/audio (mp4, mp3)'
+    description: 'Unlimited File Conversion',
+    detail: 'Convert Documents pdf/docx',
+    detail1: 'Convert Video/Audio  mp3/mp4',
+    detail2: 'Convert Images png/jpeg'
   },
 ];
 
@@ -78,9 +76,12 @@ const Plans = () => {
       try {
         if (decodedToken) {
           const response = await axios.get(`http://localhost:3000/auth/current-subscription/${decodedToken.userId}`);
-          setActivePlan(response.data.activePlan);
+          if (response.status === 200) {
+            setActivePlan(response.data.activePlan);
+          }
         }
       } catch (error) {
+        setError('Error fetching active plan: ' + (error.response?.data?.message || error.message));
         console.error('Error fetching active plan:', error);
       }
     };
@@ -97,9 +98,12 @@ const Plans = () => {
             userId: decodedToken.userId,
           });
 
-          setClientSecret(paymentIntentResponse.data.clientSecret);
-          setPaymentStatus(paymentIntentResponse.data.status || '');
+          if (paymentIntentResponse.status === 200) {
+            setClientSecret(paymentIntentResponse.data.clientSecret);
+            setPaymentStatus(paymentIntentResponse.data.status || '');
+          }
         } catch (error) {
+          setError('Error fetching client secret: ' + (error.response?.data?.message || error.message));
           console.error('Error fetching client secret:', error);
         }
       };
@@ -113,13 +117,16 @@ const Plans = () => {
       const fetchUserDetails = async () => {
         try {
           const response = await axios.get(`http://localhost:3000/auth/user/${decodedToken.userId}`);
-          const { firstname, lastname, email } = response.data;
-          setBillingDetails((prevDetails) => ({
-            ...prevDetails,
-            fullname: `${firstname} ${lastname}`,
-            email,
-          }));
+          if (response.status === 200) {
+            const { firstname, lastname, email } = response.data;
+            setBillingDetails((prevDetails) => ({
+              ...prevDetails,
+              fullname: `${firstname} ${lastname}`,
+              email,
+            }));
+          }
         } catch (error) {
+          setError('Error fetching user details: ' + (error.response?.data?.message || error.message));
           console.error('Error fetching user details:', error);
         }
       };
@@ -145,6 +152,7 @@ const Plans = () => {
     event.preventDefault();
 
     if (!stripe || !elements || !clientSecret || !decodedToken) {
+      setError('Stripe or Elements not loaded or clientSecret not available');
       return;
     }
 
@@ -157,8 +165,14 @@ const Plans = () => {
           status: 'trial',
           billingDetails,
         });
+
+        if (response.status === 200) {
+          alert('Free trial subscription succeeded!');
+          setShowModal(false);
+          window.location.href = '/dashboard';
+        }
       } else {
-        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
             card: elements.getElement(CardElement),
             billing_details: {
@@ -174,9 +188,9 @@ const Plans = () => {
           },
         });
 
-        if (error) {
-          setError('Payment failed: ' + error.message);
-          console.error('Payment failed:', error);
+        if (stripeError) {
+          setError('Payment failed: ' + stripeError.message);
+          console.error('Payment failed:', stripeError);
           return;
         }
 
@@ -186,21 +200,19 @@ const Plans = () => {
           status: 'paid',
           billingDetails,
         });
-      }
 
-      if (response.status === 200) {
-        alert(selectedPlan && selectedPlan.planType === 'free-trial' ? 'Free trial subscription succeeded!' : 'Payment succeeded!');
-        setShowModal(false);
-        window.location.href = '/dashboard';
+        if (response.status === 200) {
+          alert('Payment succeeded!');
+          setShowModal(false);
+          window.location.href = '/dashboard'; 
+        }
       }
     } catch (updateError) {
-      setError('Error handling payment: ' + updateError.message);
+      setError('Error handling payment: ' + (updateError.response?.data?.message || updateError.message));
       console.error('Error handling payment:', updateError);
     }
   };
-const formatPrice = (price) => {
-    return price === 0 ? 'Free' : `${(price / 100).toFixed(2)} ZAR`;
-  }
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Select Your Plan</h2>
@@ -211,9 +223,9 @@ const formatPrice = (price) => {
               <div className="card-body">
                 <h5 className="card-title">{plan.name}</h5>
                 <p className="card-text">{plan.description}</p>
-                <p className="card-text">{plan.detail1}</p>
-                <p className="card-text">{plan.detail2}</p>
-                <p className="card-text">{plan.detail3}</p>
+                <p className='card-text'>{plan.detail}</p>
+                <p className='card-text'>{plan.detail1}</p>
+                <p className='card-text'>{plan.detail2}</p>
                 <p className="card-text">
                   Price: {plan.price === 0 ? 'Free' : `${plan.price / 100} ZAR`}
                 </p>
@@ -238,6 +250,7 @@ const formatPrice = (price) => {
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={handleSubmit}>
+          {error && <Alert variant="danger">{error}</Alert>}
             <div className="mb-3">
               <label htmlFor="fullname" className="form-label">Full Name</label>
               <input
@@ -317,16 +330,12 @@ const formatPrice = (price) => {
               </select>
             </div>
             <div className="mb-3">
-              <label htmlFor="card-element" className="form-label">Credit or Debit Card</label>
-              <CardElement id="card-element" />
+              <label htmlFor="cardElement" className="form-label">Card Details</label>
+              <CardElement className="form-control" id="cardElement" />
             </div>
-          <p>{formatPrice}</p>
-            <Button variant="primary" type="submit" disabled={!stripe}>
-              {selectedPlan && selectedPlan.planType === 'free-trial'
-                ? 'Start Free Trial'
-                : 'Pay'}
+            <Button type="submit" variant="primary" disabled={!stripe || !elements}>
+              Pay {selectedPlan?.price / 100} ZAR
             </Button>
-            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
           </form>
         </Modal.Body>
       </Modal>
@@ -335,7 +344,8 @@ const formatPrice = (price) => {
 };
 
 Plans.propTypes = {
-  onSelect: PropTypes.func.isRequired,
+  setShowModal: PropTypes.func.isRequired,
+  setSelectedPlan: PropTypes.func.isRequired,
 };
 
 export default Plans;
