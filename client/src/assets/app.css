@@ -31,7 +31,7 @@ body {
   .nav-link {
     color: #007bff;
     font-weight: 500;
-    margin-right: 15px; /* Add spacing between links */
+    margin-right: 15px;
   }
   
   .nav-link:hover {
