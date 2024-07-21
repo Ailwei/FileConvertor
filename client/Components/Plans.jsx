@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -19,19 +19,30 @@ const plans = [
     name: 'Free Trial',
     planType: 'free-trial',
     price: 0,
-    description: 'Try our service free for 7 days. No payment information required.',
+    description:'Convert up to 10 files',
+
+      detail1: 'Convert documents(pdf, docx)',
+      detail2: 'Convert images(png,jpeg)',
+      detail3: 'Convert video/Audio(mp4, mp3)',
+    
   },
   {
     name: 'Basic',
     planType: 'basic',
     price: 5000,
-    description: 'Basic plan with essential features. Monthly billing at 50.00 ZAR.',
+    description: 'Convert up to 50 files',
+    detail1: 'Convert documents (pdf, docx)',
+    detail2: 'Convert images (png, jpeg)',
+   
   },
   {
     name: 'Premium',
     planType: 'premium',
     price: 35000,
-    description: 'Premium plan with all features. Monthly billing at 350.00 ZAR.',
+    description: 'Unlimited conversion of files',
+   detail1: 'Convert documents (pdf, docx)',
+    detail2: 'Convert images (png, jpeg)',
+    detail3: 'Convert video/audio (mp4, mp3)'
   },
 ];
 
@@ -198,6 +209,9 @@ const Plans = () => {
               <div className="card-body">
                 <h5 className="card-title">{plan.name}</h5>
                 <p className="card-text">{plan.description}</p>
+                <p className="card-text">{plan.detail1}</p>
+                <p className="card-text">{plan.detail2}</p>
+                <p className="card-text">{plan.detail3}</p>
                 <p className="card-text">
                   Price: {plan.price === 0 ? 'Free' : `${plan.price / 100} ZAR`}
                 </p>
@@ -304,6 +318,7 @@ const Plans = () => {
               <label htmlFor="card-element" className="form-label">Credit or Debit Card</label>
               <CardElement id="card-element" />
             </div>
+            {/*<p>Price: {Price / 100} ZAR</p>*/}
             <Button variant="primary" type="submit" disabled={!stripe}>
               {selectedPlan && selectedPlan.planType === 'free-trial'
                 ? 'Start Free Trial'
