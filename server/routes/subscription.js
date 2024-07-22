@@ -36,7 +36,7 @@ router.post('/create-payment-intent', verifyUser, async (req, res) => {
     const existingSubscription = await Subscription.findOne({ userId, status: { $in: ['pending', 'paid'] } });
 
     if (existingSubscription) {
-      return res.status(400).json({ error: 'User already has an active subscription' });
+      return res.status(401).json({ error: 'User already has an active subscription' });
     }
 
     if (plan === 'free-trial') {
@@ -83,7 +83,7 @@ router.post('/create-payment-intent', verifyUser, async (req, res) => {
           currency: 'zar',
           intentType: 'payment',
           paymentIntentId: paymentIntent.id,
-          status: 'pending',
+          status: 'paid',
           endDate: calculateEndDate(plan),
         });
 
@@ -135,13 +135,13 @@ router.post('/update-status', verifyUser, async (req, res) => {
       subscription.status = 'trial';
     } else if (status === 'paid') {
       if (!paymentIntentId) {
-        return res.status(400).json({ message: 'Missing payment intent ID' });
+        return res.status(401).json({ message: 'Missing payment intent ID' });
       }
 
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       if (!paymentIntent || paymentIntent.status !== 'succeeded') {
         console.error('Payment intent not succeeded or not found:', paymentIntentId);
-        return res.status(400).json({ message: 'Payment intent not succeeded' });
+        return res.status(402).json({ message: 'Payment intent not succeeded' });
       }
 
       subscription.status = 'paid';
@@ -152,7 +152,7 @@ router.post('/update-status', verifyUser, async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       console.error('User not found:', userId);
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(405).json({ message: 'User not found' });
     }
 
     if (status === 'paid' && billingDetails) {
@@ -211,7 +211,7 @@ router.get('/current-subscription/:userId', verifyUser, async (req, res) => {
       .exec();
 
     if (!subscription) {
-      return res.status(404).json({ message: 'No active subscription found' });
+      return res.status(406).json({ message: 'Continue with your Subscription' });
     }
 
     const currentDate = new Date();
@@ -241,14 +241,14 @@ router.delete('/cancel-subscription/:userId', verifyUser, async (req, res) => {
  
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(407).json({ message: 'User not found' });
     }
 
 
     const subscriptions = await Subscription.find({ userId });
 
     if (subscriptions.length === 0) {
-      return res.status(404).json({ message: 'No subscriptions found for this user' });
+      return res.status(408).json({ message: 'No subscriptions found for this user' });
     }
 
     
@@ -276,7 +276,7 @@ router.get('/users/:userId/billing-details', verifyUser, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).exec();
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(409).json({ message: 'User not found' });
     }
 
     const billingDetails = {
@@ -316,12 +316,12 @@ router.post('/update-plan', verifyUser, async (req, res) => {
     let subscription = await Subscription.findOne({ userId, plan: newPlan }).exec();
 
     if (!subscription) {
-      return res.status(404).json({ message: 'No active subscription found for the selected plan' });
+      return res.status(401).json({ message: 'No active subscription found for the selected plan' });
     }
 
     const user = await User.findById(userId).exec();
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(402).json({ message: 'User not found' });
     }
 
     const billingDetails = {

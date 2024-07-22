@@ -44,7 +44,7 @@ const checkSubscription = async (req, res, next) => {
         .exec();
 
       if (!subscription) {
-          return res.status(403).json({ error: 'No subscription found' });
+          return res.status(400).json({ error: 'No subscription found' });
       }
 
       const { plan, status, endDate, conversionCount } = subscription;
@@ -53,11 +53,11 @@ const checkSubscription = async (req, res, next) => {
       const trialPeriodRemaining = Math.ceil((endTrialDate - currentDate) / (1000 * 60 * 60 * 24));
 
       if (plan === 'free-trial' && status !== 'pending') {
-          return res.status(403).json({ error: 'No active free-trial subscription found' });
+          return res.status(401).json({ error: 'No active free-trial subscription found' });
       }
 
       if ((plan === 'basic' || plan === 'premium') && status !== 'paid') {
-          return res.status(403).json({ error: 'No active subscription found' });
+          return res.status(402).json({ error: 'No active subscription found' });
       }
 
       if (plan === 'free-trial' && trialPeriodRemaining <= 0) {
@@ -119,11 +119,11 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
 
 
     if (plan === 'free-trial' && conversionLog.conversionCount >= 10) {
-      return res.status(403).json({ error: 'Free plan allows up to 10 conversions' });
+      return res.status(402).json({ error: 'Free plan allows up to 10 conversions' });
     } else if (plan === 'basic' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg')) {
       return res.status(403).json({ error: 'Basic plan only allows document and image conversions' });
     } else if (plan === 'basic' && conversionLog.conversionCount >= 20) {
-      return res.status(403).json({ error: 'Basic plan allows up to 20 conversions per month' });
+      return res.status(404).json({ error: 'Basic plan allows up to 20 conversions per month' });
     } else if (plan === 'premium' && conversionLog.conversionCount === Infinity) {
       
     }
@@ -210,7 +210,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
         });
       });
     } else {
-      return res.status(400).json({ error: 'Unsupported conversion format' });
+      return res.status(405).json({ error: 'Unsupported conversion format' });
     }
 
     const readStream = fs.createReadStream(convertedFilePath);
@@ -336,13 +336,13 @@ router.put('/updatefiles/:filename', verifyUser, async (req, res) => {
     const file = await File.findOne({ filename: oldFilename, userId });
 
     if (!file) {
-      return res.status(404).json({ message: 'File not found or not authorized' });
+      return res.status(401).json({ message: 'File not found or not authorized' });
     }
 
     const query = { filename: oldFilename };
     const updateResult = await gfsBucket.find(query).toArray();
     if (updateResult.length === 0) {
-      return res.status(404).json({ message: 'File not found in GridFS' });
+      return res.status(402).json({ message: 'File not found' });
     }
 
     const fileId = updateResult[0]._id;
@@ -368,7 +368,7 @@ router.delete('/delete/:filename', verifyUser, async (req, res) => {
     const file = await File.findOne({ filename, userId });
 
     if (!file) {
-      return res.status(404).json({ message: 'File not found or not authorized' });
+      return res.status(403).json({ message: 'File not found or not authorized' });
     }
 
     
@@ -376,7 +376,7 @@ router.delete('/delete/:filename', verifyUser, async (req, res) => {
     const fileDocument = await filesCollection.findOne({ filename });
 
     if (!fileDocument) {
-      return res.status(404).json({ message: 'File not found in GridFS' });
+      return res.status(404).json({ message: 'File not found' });
     }
 
     await gfsBucket.delete(fileDocument._id);
