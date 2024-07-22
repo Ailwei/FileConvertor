@@ -81,8 +81,20 @@ const Plans = () => {
           }
         }
       } catch (error) {
-        {/*setError('Error fetching active plan: ' + (error.response?.data?.message || error.message));*/}
-        {/*console.error('Error fetching active plan:', error);*/}
+        if (error.response) {
+          if (error.response.status === 400) {
+            setError('Invalid plan selected');
+          } else if (error.response.status === 401) {
+            setError('User already has an active subscription');
+          } else if (error.response.status === 500) {
+            setError('Internal server error while fetching client secret');
+          } else {
+            setError('Error fetching client secret: ' + (error.response.data.error || error.message));
+          }
+        } else {
+          setError('Network or server error');
+        }
+        console.error('Error fetching client secret:', error);
       }
     };
 
@@ -103,10 +115,23 @@ const Plans = () => {
             setPaymentStatus(paymentIntentResponse.data.status || '');
           }
         } catch (error) {
-          setError('Error fetching client secret: ' + (error.response?.data?.message || error.message));
+          if (error.response) {
+            if (error.response.status === 400) {
+              setError('Invalid plan selected');
+            } else if (error.response.status === 401) {
+              setError('User already has an active subscription');
+            } else if (error.response.status === 500) {
+              setError('Internal server error while fetching client secret');
+            } else {
+              setError('Error fetching client secret: ' + (error.response.data.error || error.message));
+            }
+          } else {
+            setError('Network or server error');
+          }
           console.error('Error fetching client secret:', error);
         }
       };
+  
 
       fetchClientSecret();
     }
@@ -208,7 +233,23 @@ const Plans = () => {
         }
       }
     } catch (updateError) {
-      setError('Error handling payment: ' + (updateError.response?.data?.message || updateError.message));
+      if (updateError.response) {
+        if (updateError.response.status === 400) {
+          setError('Missing required fields in request body');
+        } else if (updateError.response.status === 401) {
+          setError('Missing payment intent ID or user already has an active subscription');
+        } else if (updateError.response.status === 402) {
+          setError('Payment intent not succeeded or not found');
+        } else if (updateError.response.status === 405) {
+          setError('User not found');
+        } else if (updateError.response.status === 500) {
+          setError('Internal server error while updating status');
+        } else {
+          setError('Error handling payment: ' + (updateError.response.data.message || updateError.message));
+        }
+      } else {
+        setError('Network or server error');
+      }
       console.error('Error handling payment:', updateError);
     }
   };
