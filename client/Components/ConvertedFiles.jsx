@@ -8,6 +8,7 @@ const ConvertedFiles = () => {
   const [editingFilename, setEditingFilename] = useState(null);
   const [newFilename, setNewFilename] = useState('');
   const fileRefs = useRef({});
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -19,15 +20,25 @@ const ConvertedFiles = () => {
           },
         });
         setFiles(response.data.files);
-      } catch (err) {
+        setError(null);
+      }catch (err) {
         console.error('Error fetching files:', err);
-        setFiles([]);
+        if (err.response) {
+          if (err.response.status === 404) {
+            setError('No files found for the current user.');
+          } else if (err.response.status === 500) {
+            setError('Failed to fetch files. Please try again later.');
+          } else {
+            setError('An unexpected error occurred.');
+          }
+        } else {
+          setError('No response from server. Please check your connection.');
+        }
       }
     };
 
     fetchFiles();
   }, []);
-
   const handleEditClick = (file) => {
     setEditingFilename(file.filename);
     setNewFilename(file.filename);
@@ -54,8 +65,22 @@ const ConvertedFiles = () => {
       );
       setFiles(files.map(f => f.filename === file.filename ? { ...f, filename: newFilename } : f));
       setEditingFilename(null);
+      setError(null);
     } catch (err) {
       console.error('Error updating filename:', err);
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError('File not found or not authorized.');
+        } else if (err.response.status === 402) {
+          setError('File not found.');
+        } else if (err.response.status === 500) {
+          setError('Error updating filename. Please try again later.');
+        } else {
+          setError('An unexpected error occurred.');
+        }
+      } else {
+        setError('No response from server. Please check your connection.');
+      }
     }
   };
 
@@ -73,10 +98,25 @@ const ConvertedFiles = () => {
         },
       });
       setFiles(files.filter(f => f.filename !== file.filename));
+      setError(null);
     } catch (err) {
       console.error('Error deleting file:', err);
+      if (err.response) {
+        if (err.response.status === 403) {
+          setError('File not found or not authorized.');
+        } else if (err.response.status === 404) {
+          setError('File not found.');
+        } else if (err.response.status === 500) {
+          setError('Error deleting file. Please try again later.');
+        } else {
+          setError('An unexpected error occurred.');
+        }
+      } else {
+        setError('No response from server. Please check your connection.');
+      }
     }
   };
+
 
   return (
     <div className="converted-files">
