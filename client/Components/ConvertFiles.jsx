@@ -45,7 +45,26 @@ const FileConvert = ({ onClose }) => {
       }
     } catch (err) {
       console.error('Error converting file:', err);
-      setError('Error converting file. Please try again.');
+      if (err.response) {
+        const status = err.response.status;
+        if (status === 400) {
+          setError('No file uploaded');
+        } else if (status === 402) {
+          setError('Free plan allows up to 10 conversions');
+        } else if (status === 403) {
+          setError('Basic plan only allows document and image conversions');
+        } else if (status === 404) {
+          setError('Basic plan allows up to 20 conversions per month');
+        } else if (status === 405) {
+          setError('Unsupported conversion format');
+        } else if (status === 500) {
+          setError('Failed to convert file');
+        } else {
+          setError('Error converting file. Please try again.');
+        }
+      } else {
+        setError('Error converting file. Please try again.');
+      }
     }
   };
 
