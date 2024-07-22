@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-//import '../src/assets/Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -32,8 +31,26 @@ function Login() {
           setError('Login failed: ' + response.data.message);
         }
       })
-      .catch(() => {
-        setError('Login failed. Please try again.');
+      .catch(error => {
+        if (error.response) {
+         
+          const status = error.response.status;
+          if (status === 400) {
+            setError('Login failed: User not registered.');
+          } else if (status === 401) {
+            setError('Login failed: Password is incorrect.');
+          } else if (status === 500) {
+            setError('Login failed: Internal server error.');
+          } else {
+            setError('Login failed. Please try again.');
+          }
+        } else if (error.request) {
+         
+          setError('Login failed. No response from server.');
+        } else {
+          
+          setError('Login failed. Please try again.');
+        }
       });
   };
 
