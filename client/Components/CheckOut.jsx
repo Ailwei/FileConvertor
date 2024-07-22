@@ -16,6 +16,9 @@ const countries = [
 const CheckoutForm = ({ plan, closeModal }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const [error, setError] = useState();
+  const [activatePlan, setActivePlan] = useState();
+  const [loading, setLoading] = useState();
   const [clientSecret, setClientSecret] = useState('');
   const [price, setPrice] = useState(0);
   const [billingDetails, setBillingDetails] = useState({
@@ -27,7 +30,35 @@ const CheckoutForm = ({ plan, closeModal }) => {
     country: '',
   });
   const [decodedToken, setDecodedToken] = useState(null);
-
+  useEffect(() => {
+    const fetchActivePlan = async () => {
+      try {
+        if (decodedToken) {
+          const response = await axios.get(`http://localhost:3000/auth/current-subscription/${decodedToken.userId}`);
+          if (response.status === 200) {
+            setActivePlan(response.data.activePlan);
+            setError(null);
+          }
+        }
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 400) {
+            setError('Invalid plan selected');
+          } else if (error.response.status === 401) {
+            setError('User already has an active subscription');
+          } else if (error.response.status === 500) {
+            setError('Internal server error while fetching active plan');
+          } else {
+            setError('Error fetching active plan: ' + (error.response.data.error || error.message));
+          }
+        } else {
+          setError('Network or server error');
+        }
+        console.error('Error fetching active plan:', error);
+      }
+    };
+    fetchActivePlan();
+  }, [decodedToken]);
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -53,10 +84,22 @@ const CheckoutForm = ({ plan, closeModal }) => {
           setPrice(paymentIntentResponse.data.amount);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (error.response) {
+          if (error.response.status === 400) {
+            setError('Invalid plan selected');
+          } else if (error.response.status === 401) {
+            setError('User already has an active subscription');
+          } else if (error.response.status === 500) {
+            setError('Internal server error while fetching client secret');
+          } else {
+            setError('Error fetching client secret: ' + (error.response.data.error || error.message));
+          }
+        } else {
+          setError('Network or server error');
+        }
+        console.error('Error fetching client secret:', error);
       }
-    };
-
+    }; 
     fetchUserDetails();
   }, [plan]);
 
@@ -74,7 +117,8 @@ const CheckoutForm = ({ plan, closeModal }) => {
     if (!stripe || !elements || !clientSecret || !decodedToken) {
       return;
     }
-
+    setLoading(true);
+    setError(null);
     try {
       let response;
 
@@ -96,6 +140,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
         });
 
         if (error) {
+          setError(`Payment failed: ${error.message}`);
           console.error('Setup failed:', error);
           return;
         }
@@ -124,6 +169,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
         });
 
         if (error) {
+          setError(`Payment failed: ${error.message}`);
           console.error('Payment failed:', error);
           return;
         }
@@ -144,16 +190,38 @@ const CheckoutForm = ({ plan, closeModal }) => {
         }
         closeModal();
         window.location.href = '/dashboard';
+      } 
+    }catch (updateError) {
+    if (updateError.response) {
+      if (updateError.response.status === 400) {
+        setError('Missing required fields in request body');
+      } else if (updateError.response.status === 401) {
+        setError('Missing payment intent ID or user already has an active subscription');
+      } else if (updateError.response.status === 402) {
+        setError('Payment intent not succeeded or not found');
+      } else if (updateError.response.status === 405) {
+        setError('User not found');
+      } else if (updateError.response.status === 500) {
+        setError('Internal server error while updating status');
+      } else {
+        setError('Error handling payment: ' + (updateError.response.data.message || updateError.message));
       }
-    } catch (updateError) {
-      console.error('Error handling payment:', updateError);
+    } else {
+      setError('Network or server error');
     }
-  };
-
+    console.error('Error handling payment:', updateError);
+  }
+  }
+   
   return (
     <div className="container">
       <h2 className="mb-4">Checkout</h2>
       <form onSubmit={handleSubmit}>
+      {error && (
+  <div className="alert alert-danger" role="alert">
+    {error}
+  </div>
+)}
         <div className="form-group">
           <label htmlFor="fullname">Full Name:</label>
           <input
@@ -242,9 +310,10 @@ const CheckoutForm = ({ plan, closeModal }) => {
           </button>
         </div>
       </form>
-    </div>
-  );
-};
+   </div>
+
+          );
+        };
 
 CheckoutForm.propTypes = {
   plan: PropTypes.string.isRequired,
