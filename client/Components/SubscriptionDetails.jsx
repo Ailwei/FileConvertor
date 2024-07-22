@@ -24,13 +24,27 @@ const SubscriptionDetails = () => {
       try {
         const response = await axios.get(`http://localhost:3000/auth/current-subscription/${userId}`);
         setSubscription(response.data);
-      } catch (error) {
-        setError('No subscription details found for this user');
+        setError(null);
+      } catch (err) {
+        if (err.response) {
+          if (err.response.status === 406) {
+            setError('No active subscription found');
+          } else if (err.response.status === 408) {
+            setError('No subscriptions found for this user');
+          } else if (err.response.status === 401) {
+            setError('Unauthorized request. Please log in.');
+          } else if (err.response.status === 500) {
+            setError('Internal server error. Please try again later.');
+          } else {
+            setError('An unexpected error occurred.');
+          }
+        } else {
+          setError('No response from server. Please check your connection.');
+        }
       } finally {
         setLoading(false);
       }
     };
-
     fetchSubscriptionDetails();
   }, []);
 
@@ -47,8 +61,19 @@ const SubscriptionDetails = () => {
     try {
       await axios.delete(`http://localhost:3000/auth/cancel-subscription/${userId}`);
       setSubscription(null);
-    } catch (error) {
-      setError('Failed to cancel subscription');
+      setError(null);
+    } catch (err) {
+      if (err.response) {
+        if (err.response.status === 407) {
+          setError('User not found');
+        } else if (err.response.status === 500) {
+          setError('Internal server error. Please try again later.');
+        } else {
+          setError('An unexpected error occurred.');
+        }
+      } else {
+        setError('No response from server. Please check your connection.');
+      }
     }
   };
 
