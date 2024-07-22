@@ -81,8 +81,8 @@ const Plans = () => {
           }
         }
       } catch (error) {
-        setError('Error fetching active plan: ' + (error.response?.data?.message || error.message));
-        console.error('Error fetching active plan:', error);
+        {/*setError('Error fetching active plan: ' + (error.response?.data?.message || error.message));*/}
+        {/*console.error('Error fetching active plan:', error);*/}
       }
     };
 
