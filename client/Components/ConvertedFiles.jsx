@@ -14,7 +14,7 @@ const ConvertedFiles = () => {
     const fetchFiles = async () => {
       try {
         const token = sessionStorage.getItem('authToken');
-        const response = await axios.get('file-convertor-api.vercel.app/auth/files', {
+        const response = await axios.get('https://file-convertor-api.vercel.app/auth/files', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
