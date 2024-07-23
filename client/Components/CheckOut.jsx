@@ -34,7 +34,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
     const fetchActivePlan = async () => {
       try {
         if (decodedToken) {
-          const response = await axios.get(`file-convertor-api.vercel.app/auth/current-subscription/${decodedToken.userId}`);
+          const response = await axios.get(`https://file-convertor-api.vercel.app/auth/current-subscription/${decodedToken.userId}`);
           if (response.status === 200) {
             setActivePlan(response.data.activePlan);
             setError(null);
