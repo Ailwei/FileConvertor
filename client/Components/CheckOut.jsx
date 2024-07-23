@@ -67,7 +67,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
           const decoded = jwt_decode(token);
           setDecodedToken(decoded);
 
-          const userDetailsResponse = await axios.get(`file-convertor-api.vercel.app/auth/user/${decoded.userId}`);
+          const userDetailsResponse = await axios.get(`https://file-convertor-api.vercel.app/auth/user/${decoded.userId}`);
           const { firstname, lastname, email } = userDetailsResponse.data;
           setBillingDetails((prevDetails) => ({
             ...prevDetails,
@@ -75,7 +75,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
             email,
           }));
 
-          const paymentIntentResponse = await axios.post('file-convertor-api.vercel.app/auth/create-payment-intent', {
+          const paymentIntentResponse = await axios.post('https://file-convertor-api.vercel.app/auth/create-payment-intent', {
             plan,
             userId: decoded.userId,
           });
@@ -145,7 +145,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
           return;
         }
 
-        response = await axios.post('file-convertor-api.vercel.app/auth/update-status', {
+        response = await axios.post('https://file-convertor-api.vercel.app/auth/update-status', {
           userId: decodedToken.userId,
           paymentIntentId: setupIntent.id,
           status: 'pending',
@@ -174,7 +174,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
           return;
         }
 
-        response = await axios.post('file-convertor-api.vercel.app/auth/update-status', {
+        response = await axios.post('https://file-convertor-api.vercel.app/auth/update-status', {
           userId: decodedToken.userId,
           paymentIntentId: paymentIntent.id,
           status: 'paid',
