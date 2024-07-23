@@ -13,7 +13,7 @@ function ResetPassword() {
     const handleResetPassword = (e) => {
         e.preventDefault();
 
-        axios.post(`file-convertor-api.vercel.app/auth/reset-password/${token}`, { password })
+        axios.post(`https://file-convertor-api.vercel.app/auth/reset-password/${token}`, { password })
             .then(response => {
                 if (response.data.message === "updated record") {
                     alert("Password updated successfully");
