@@ -54,8 +54,7 @@ const ConvertedFiles = () => {
   const handleSaveClick = async (file) => {
     try {
       const token = sessionStorage.getItem('authToken');
-      await axios.put(
-        `file-convertor-api.vercel.app/auth/updatefiles/${file.filename}`,
+      await axios.put(`https://file-convertor-api.vercel.app/auth/updatefiles/${file.filename}`,
         { newFilename },
         {
           headers: {
@@ -92,7 +91,7 @@ const ConvertedFiles = () => {
   const handleDeleteClick = async (file) => {
     try {
       const token = sessionStorage.getItem('authToken');
-      await axios.delete(`file-convertor-api.vercel.app/auth/delete/${file.filename}`, {
+      await axios.delete(`https://file-convertor-api.vercel.app/auth/delete/${file.filename}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
