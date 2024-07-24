@@ -20,15 +20,8 @@ const UpdateProfile = ({ onClose }) => {
         if (token) {
           const decoded = jwt_decode(token);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
           const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
-=======
-          const userDetailsResponse = await axios.get(`file-convertor-api.vercel.app/auth/user/${decoded.userId}`);
->>>>>>> parent of e46f339 (Update UpdateProfile.jsx)
-=======
-          const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
->>>>>>> parent of 68761c8 (Update UpdateProfile.jsx)
+
           const { firstname, lastname, email } = userDetailsResponse.data;
           setUserDetails({
             firstname,
@@ -59,15 +52,7 @@ const UpdateProfile = ({ onClose }) => {
       const token = sessionStorage.getItem('authToken');
       const decoded = jwt_decode(token);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
       const response = await axios.put('http://localhost:3000/auth/profile', {
-=======
-      const response = await axios.put('file-convertor-api.vercel.app/auth/profile', {
->>>>>>> parent of e46f339 (Update UpdateProfile.jsx)
-=======
-      const response = await axios.put('http://localhost:3000/auth/profile', {
->>>>>>> parent of 68761c8 (Update UpdateProfile.jsx)
         userId: decoded.userId,
         firstname: userDetails.firstname,
         lastname: userDetails.lastname,

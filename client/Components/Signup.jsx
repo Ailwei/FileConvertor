@@ -20,11 +20,7 @@ function Signup() {
       return;
     }
 
-<<<<<<< HEAD
     axios.post("http://localhost:3000/auth/signup", { firstname, lastname, email, password })
-=======
-    axios.post("file-convertor-api.vercel.app/auth/signup", { firstname, lastname, email, password })
->>>>>>> parent of 45a6196 (Update Signup.jsx)
       .then(response => {
         console.log(response.data);
         navigate('/login');

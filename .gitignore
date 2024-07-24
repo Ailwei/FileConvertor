@@ -1,0 +1,7 @@
+uploads/
+
+
+
+# Ignore environment variables files
+.env
+.env.*

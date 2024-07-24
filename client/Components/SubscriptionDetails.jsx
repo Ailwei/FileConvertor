@@ -22,15 +22,7 @@ const SubscriptionDetails = () => {
       const userId = decodedToken.userId;
 
       try {
-<<<<<<< HEAD
-<<<<<<< HEAD
         const response = await axios.get(`http://localhost:3000/auth/current-subscription/${userId}`);
-=======
-        const response = await axios.get(`file-convertor-api.vercel.app/auth/current-subscription/${userId}`);
->>>>>>> parent of 65214ec (Update SubscriptionDetails.jsx)
-=======
-        const response = await axios.get(`http://localhost:3000/auth/current-subscription/${userId}`);
->>>>>>> parent of 3ef1bef (Update SubscriptionDetails.jsx)
         setSubscription(response.data);
         setError(null);
       } catch (err) {
@@ -67,15 +59,7 @@ const SubscriptionDetails = () => {
     const userId = decodedToken.userId;
 
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
       await axios.delete(`http://localhost:3000/auth/cancel-subscription/${userId}`);
-=======
-      await axios.delete(`file-convertor-api.vercel.app/auth/cancel-subscription/${userId}`);
->>>>>>> parent of 65214ec (Update SubscriptionDetails.jsx)
-=======
-      await axios.delete(`http://localhost:3000/auth/cancel-subscription/${userId}`);
->>>>>>> parent of 3ef1bef (Update SubscriptionDetails.jsx)
       setSubscription(null);
       setError(null);
     } catch (err) {

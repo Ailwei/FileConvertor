@@ -26,11 +26,9 @@ const Dashboard = ({ selectedPackage }) => {
       navigate('/');
       return;
     }
-<<<<<<< HEAD
+
     axios.get('http://localhost:3000/auth/verify', {
-=======
-    axios.get('file-convertor-api.vercel.app/auth/verify', {
->>>>>>> parent of 724a349 (Update Dashboard.jsx)
+
       headers: {
         Authorization: `Bearer ${authToken}`
       }
@@ -55,11 +53,7 @@ const Dashboard = ({ selectedPackage }) => {
   }, [location]);
 
   const handleLogout = () => {
-<<<<<<< HEAD
     axios.get('http://localhost:3000/auth/logout')
-=======
-    axios.get('file-convertor-api.vercel.app/auth/logout')
->>>>>>> parent of 724a349 (Update Dashboard.jsx)
       .then(res => {
         if (res.data.status) {
           sessionStorage.removeItem('authToken');

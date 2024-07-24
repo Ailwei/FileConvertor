@@ -13,15 +13,9 @@ function ResetPassword() {
     const handleResetPassword = (e) => {
         e.preventDefault();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
         axios.post(`http://localhost:3000/auth/reset-password/${token}`, { password })
-=======
-        axios.post(`file-convertor-api.vercel.app/auth/reset-password/${token}`, { password })
->>>>>>> parent of 59eabca (Update ResetPassword.jsx)
-=======
-        axios.post(`http://localhost:3000/auth/reset-password/${token}`, { password })
->>>>>>> parent of a836292 (Update ResetPassword.jsx)
+
             .then(response => {
                 if (response.data.message === "updated record") {
                     alert("Password updated successfully");

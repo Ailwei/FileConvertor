@@ -75,11 +75,7 @@ const Plans = () => {
     const fetchActivePlan = async () => {
       try {
         if (decodedToken) {
-<<<<<<< HEAD
           const response = await axios.get(`http://localhost:3000/auth/current-subscription/${decodedToken.userId}`);
-=======
-          const response = await axios.get(`file-convertor-api.vercel.app/auth/current-subscription/${decodedToken.userId}`);
->>>>>>> parent of 24be643 (Update Plans.jsx)
           if (response.status === 200) {
             setActivePlan(response.data.activePlan);
           }
@@ -109,11 +105,7 @@ const Plans = () => {
     if (selectedPlan && decodedToken) {
       const fetchClientSecret = async () => {
         try {
-<<<<<<< HEAD
           const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
-=======
-          const paymentIntentResponse = await axios.post('file-convertor-api.vercel.app/auth/create-payment-intent', {
->>>>>>> parent of 24be643 (Update Plans.jsx)
             plan: selectedPlan.planType,
             userId: decodedToken.userId,
           });
@@ -149,11 +141,7 @@ const Plans = () => {
     if (decodedToken) {
       const fetchUserDetails = async () => {
         try {
-<<<<<<< HEAD
           const response = await axios.get(`http://localhost:3000/auth/user/${decodedToken.userId}`);
-=======
-          const response = await axios.get(`file-convertor-api.vercel.app/auth/user/${decodedToken.userId}`);
->>>>>>> parent of 24be643 (Update Plans.jsx)
           if (response.status === 200) {
             const { firstname, lastname, email } = response.data;
             setBillingDetails((prevDetails) => ({
@@ -197,11 +185,7 @@ const Plans = () => {
       let response;
 
       if (selectedPlan && selectedPlan.planType === 'free-trial') {
-<<<<<<< HEAD
         response = await axios.post('http://localhost:3000/auth/update-status', {
-=======
-        response = await axios.post('file-convertor-api.vercel.app/auth/update-status', {
->>>>>>> parent of 24be643 (Update Plans.jsx)
           userId: decodedToken.userId,
           status: 'trial',
           billingDetails,
@@ -235,11 +219,7 @@ const Plans = () => {
           return;
         }
 
-<<<<<<< HEAD
         response = await axios.post('http://localhost:3000/auth/update-status', {
-=======
-        response = await axios.post('file-convertor-api.vercel.app/auth/update-status', {
->>>>>>> parent of 24be643 (Update Plans.jsx)
           userId: decodedToken.userId,
           paymentIntentId: paymentIntent.id,
           status: 'paid',

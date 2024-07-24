@@ -13,15 +13,7 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "axios": "^1.7.2",
-<<<<<<< HEAD
-<<<<<<< HEAD
     "bcrypt": "^5.1.1",
-=======
-    "bcryptjs": "^5.1.1",
->>>>>>> parent of a1eb0d3 (Update package.json)
-=======
-    "bcrypt": "^5.1.1",
->>>>>>> parent of ec771b4 (Update package.json)
     "child_process": "^1.0.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
