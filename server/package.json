@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.jx"
+    "start": "nodemon index.jx",
+     "postinstall": "npm rebuild bcrypt"
   },
   "keywords": [],
   "author": "",
