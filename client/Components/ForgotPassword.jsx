@@ -17,7 +17,11 @@ function ForgotPassword() {
             return;
         }
 
+<<<<<<< HEAD
         axios.post("http://localhost:3000/auth/forgot-password", { email })
+=======
+        axios.post("file-convertor-api.vercel.app/auth/forgot-password", { email })
+>>>>>>> parent of 6ad2d48 (Update ForgotPassword.jsx)
             .then(response => {
                 if (response.data.status) {
                     alert("Check your email for reset instructions");
