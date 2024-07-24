@@ -19,7 +19,11 @@ function Login() {
       return;
     }
 
+<<<<<<< HEAD
     axios.post("http://localhost:3000/auth/login", { email, password })
+=======
+    axios.post("file-convertor-api.vercel.app/auth/login", { email, password })
+>>>>>>> parent of 341c0e6 (Update Login.jsx)
       .then(response => {
         if (response.data.status) {
           sessionStorage.setItem('authToken', response.data.token);
