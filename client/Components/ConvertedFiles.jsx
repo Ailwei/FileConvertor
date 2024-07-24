@@ -14,7 +14,11 @@ const ConvertedFiles = () => {
     const fetchFiles = async () => {
       try {
         const token = sessionStorage.getItem('authToken');
+<<<<<<< HEAD
         const response = await axios.get('http://localhost:3000/auth/files', {
+=======
+        const response = await axios.get('file-convertor-api.vercel.app/auth/files', {
+>>>>>>> parent of 49f4dc3 (Update ConvertedFiles.jsx)
           headers: {
             Authorization: `Bearer ${token}`,
           },
