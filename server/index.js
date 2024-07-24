@@ -14,7 +14,7 @@ const bodyParser = require("body-parser")
 dotenv.config();
 
 app.use(express.json())
-app.use(cors({
+app.options('*',cors({
     origin: ['https://file-convertor-eight.vercel.app'],
     credentials: true
 }))
