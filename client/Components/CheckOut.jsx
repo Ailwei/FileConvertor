@@ -67,7 +67,11 @@ const CheckoutForm = ({ plan, closeModal }) => {
           const decoded = jwt_decode(token);
           setDecodedToken(decoded);
 
+<<<<<<< HEAD
           const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
+=======
+          const userDetailsResponse = await axios.get(`file-convertor-api.vercel.app/auth/user/${decoded.userId}`);
+>>>>>>> parent of 251b0ee (Update CheckOut.jsx)
           const { firstname, lastname, email } = userDetailsResponse.data;
           setBillingDetails((prevDetails) => ({
             ...prevDetails,
@@ -75,7 +79,11 @@ const CheckoutForm = ({ plan, closeModal }) => {
             email,
           }));
 
+<<<<<<< HEAD
           const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
+=======
+          const paymentIntentResponse = await axios.post('file-convertor-api.vercel.app/auth/create-payment-intent', {
+>>>>>>> parent of 251b0ee (Update CheckOut.jsx)
             plan,
             userId: decoded.userId,
           });
@@ -145,7 +153,11 @@ const CheckoutForm = ({ plan, closeModal }) => {
           return;
         }
 
+<<<<<<< HEAD
         response = await axios.post('http://localhost:3000/auth/update-status', {
+=======
+        response = await axios.post('file-convertor-api.vercel.app/auth/update-status', {
+>>>>>>> parent of 251b0ee (Update CheckOut.jsx)
           userId: decodedToken.userId,
           paymentIntentId: setupIntent.id,
           status: 'pending',
@@ -174,7 +186,11 @@ const CheckoutForm = ({ plan, closeModal }) => {
           return;
         }
 
+<<<<<<< HEAD
         response = await axios.post('http://localhost:3000/auth/update-status', {
+=======
+        response = await axios.post('file-convertor-api.vercel.app/auth/update-status', {
+>>>>>>> parent of 251b0ee (Update CheckOut.jsx)
           userId: decodedToken.userId,
           paymentIntentId: paymentIntent.id,
           status: 'paid',
