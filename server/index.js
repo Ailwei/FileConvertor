@@ -32,7 +32,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Something went wrong!' });
 })
 
-mongoose.connect('mongodb://127.0.0.1:27017/ProjectDb');
+mongoose.connect('mongodb+srv://Ailwei:gsnw2Ey45ysWrfRo@cluster0.m6rnubf.mongodb.net/ProjectDb?retryWrites=true&w=majority&appName=Cluster0');
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
