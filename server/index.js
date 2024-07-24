@@ -15,7 +15,7 @@ dotenv.config();
 
 app.use(express.json())
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: 'https://file-convertor-eight.vercel.app',
     credentials: true
 }))
 
@@ -32,7 +32,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Something went wrong!' });
 })
 
-mongoose.connect('mongodb+srv://Ailwei:gsnw2Ey45ysWrfRo@cluster0.m6rnubf.mongodb.net/ProjectDb?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb://127.0.0.1:27017/ProjectDb');
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);

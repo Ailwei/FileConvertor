@@ -48,7 +48,7 @@ const FileConvert = ({ onClose }) => {
       if (err.response) {
         const status = err.response.status;
         if (status === 400) {
-          setError('Subscribe to plan in order to convert files ');
+          setError('No file uploaded');
         } else if (status === 402) {
           setError('Free plan allows up to 10 conversions');
         } else if (status === 403) {
