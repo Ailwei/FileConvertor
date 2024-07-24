@@ -32,7 +32,11 @@ const FileConvert = ({ onClose }) => {
     formData.append('format', format);
 
     try {
+<<<<<<< HEAD
       const response = await axios.post('http://localhost:3000/auth/convert', formData, {
+=======
+      const response = await axios.post('file-convertor-api.vercel.app/auth/convert', formData, {
+>>>>>>> parent of 5ebc5b4 (Update ConvertFiles.jsx)
         headers: {
           'Content-Type': 'multipart/form-data',
         },
