@@ -14,7 +14,7 @@ const ConvertedFiles = () => {
     const fetchFiles = async () => {
       try {
         const token = sessionStorage.getItem('authToken');
-        const response = await axios.get('http://localhost:3000/auth/files', {
+        const response = await axios.get('https://file-convertor-api.vercel.app/auth/files', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -54,8 +54,7 @@ const ConvertedFiles = () => {
   const handleSaveClick = async (file) => {
     try {
       const token = sessionStorage.getItem('authToken');
-      await axios.put(
-        `http://localhost:3000/auth/updatefiles/${file.filename}`,
+      await axios.put(`https://file-convertor-api.vercel.app/auth/updatefiles/${file.filename}`,
         { newFilename },
         {
           headers: {
@@ -92,7 +91,7 @@ const ConvertedFiles = () => {
   const handleDeleteClick = async (file) => {
     try {
       const token = sessionStorage.getItem('authToken');
-      await axios.delete(`http://localhost:3000/auth/delete/${file.filename}`, {
+      await axios.delete(`https://file-convertor-api.vercel.app/auth/delete/${file.filename}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -146,7 +145,7 @@ const ConvertedFiles = () => {
               <p><strong>Size:</strong> {file.size} bytes</p>
               <p><strong>Format:</strong> {file.format}</p>
               <div>
-                <a href={`http://localhost:3000/auth/download/${file.filename}`} target="_blank" rel="noopener noreferrer">
+                <a href={`file-convertor-api.vercel.app/auth/download/${file.filename}`} target="_blank" rel="noopener noreferrer">
                   View File
                 </a>
                 <a href="#" onClick={() => handleDeleteClick(file)}>Delete</a>

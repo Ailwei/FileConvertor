@@ -22,7 +22,7 @@ const SubscriptionDetails = () => {
       const userId = decodedToken.userId;
 
       try {
-        const response = await axios.get(`http://localhost:3000/auth/current-subscription/${userId}`);
+        const response = await axios.get(`https://file-convertor-api.vercel.app/auth/current-subscription/${userId}`);
         setSubscription(response.data);
         setError(null);
       } catch (err) {
@@ -59,7 +59,7 @@ const SubscriptionDetails = () => {
     const userId = decodedToken.userId;
 
     try {
-      await axios.delete(`http://localhost:3000/auth/cancel-subscription/${userId}`);
+      await axios.delete(`https://file-convertor-api.vercel.app/auth/cancel-subscription/${userId}`);
       setSubscription(null);
       setError(null);
     } catch (err) {

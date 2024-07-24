@@ -20,7 +20,7 @@ function Signup() {
       return;
     }
 
-    axios.post("http://localhost:3000/auth/signup", { firstname, lastname, email, password })
+    axios.post("htpps://file-convertor-api.vercel.app/auth/signup", { firstname, lastname, email, password })
       .then(response => {
         console.log(response.data);
         navigate('/login');

@@ -34,7 +34,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
     const fetchActivePlan = async () => {
       try {
         if (decodedToken) {
-          const response = await axios.get(`http://localhost:3000/auth/current-subscription/${decodedToken.userId}`);
+          const response = await axios.get(`https://file-convertor-api.vercel.app/auth/current-subscription/${decodedToken.userId}`);
           if (response.status === 200) {
             setActivePlan(response.data.activePlan);
             setError(null);
@@ -67,7 +67,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
           const decoded = jwt_decode(token);
           setDecodedToken(decoded);
 
-          const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
+          const userDetailsResponse = await axios.get(`https://file-convertor-api.vercel.app/auth/user/${decoded.userId}`);
           const { firstname, lastname, email } = userDetailsResponse.data;
           setBillingDetails((prevDetails) => ({
             ...prevDetails,
@@ -75,7 +75,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
             email,
           }));
 
-          const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
+          const paymentIntentResponse = await axios.post('https://file-convertor-api.vercel.app/auth/create-payment-intent', {
             plan,
             userId: decoded.userId,
           });
@@ -145,7 +145,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
           return;
         }
 
-        response = await axios.post('http://localhost:3000/auth/update-status', {
+        response = await axios.post('https://file-convertor-api.vercel.app/auth/update-status', {
           userId: decodedToken.userId,
           paymentIntentId: setupIntent.id,
           status: 'pending',
@@ -174,7 +174,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
           return;
         }
 
-        response = await axios.post('http://localhost:3000/auth/update-status', {
+        response = await axios.post('https://file-convertor-api.vercel.app/auth/update-status', {
           userId: decodedToken.userId,
           paymentIntentId: paymentIntent.id,
           status: 'paid',
