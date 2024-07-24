@@ -75,7 +75,7 @@ const Plans = () => {
     const fetchActivePlan = async () => {
       try {
         if (decodedToken) {
-          const response = await axios.get(`https://file-convertor-api.vercel.app/auth/current-subscription/${decodedToken.userId}`);
+          const response = await axios.get(`http://localhost:3000/auth/current-subscription/${decodedToken.userId}`);
           if (response.status === 200) {
             setActivePlan(response.data.activePlan);
           }
@@ -105,7 +105,7 @@ const Plans = () => {
     if (selectedPlan && decodedToken) {
       const fetchClientSecret = async () => {
         try {
-          const paymentIntentResponse = await axios.post('https://file-convertor-api.vercel.app/auth/create-payment-intent', {
+          const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
             plan: selectedPlan.planType,
             userId: decodedToken.userId,
           });
@@ -141,7 +141,7 @@ const Plans = () => {
     if (decodedToken) {
       const fetchUserDetails = async () => {
         try {
-          const response = await axios.get(`https://file-convertor-api.vercel.app/auth/user/${decodedToken.userId}`);
+          const response = await axios.get(`http://localhost:3000/auth/user/${decodedToken.userId}`);
           if (response.status === 200) {
             const { firstname, lastname, email } = response.data;
             setBillingDetails((prevDetails) => ({
@@ -185,7 +185,7 @@ const Plans = () => {
       let response;
 
       if (selectedPlan && selectedPlan.planType === 'free-trial') {
-        response = await axios.post('https://file-convertor-api.vercel.app/auth/update-status', {
+        response = await axios.post('http://localhost:3000/auth/update-status', {
           userId: decodedToken.userId,
           status: 'trial',
           billingDetails,
@@ -219,7 +219,7 @@ const Plans = () => {
           return;
         }
 
-        response = await axios.post('https://file-convertor-api.vercel.app/auth/update-status', {
+        response = await axios.post('http://localhost:3000/auth/update-status', {
           userId: decodedToken.userId,
           paymentIntentId: paymentIntent.id,
           status: 'paid',
