@@ -15,7 +15,11 @@ dotenv.config();
 
 app.use(express.json())
 app.use(cors({
+<<<<<<< HEAD
     origin: ['https://file-convertor-eight.vercel.app'],
+=======
+    origin: ["http://localhost:5173"],
+>>>>>>> parent of 998f09e (Update index.js)
     credentials: true
 }))
 
