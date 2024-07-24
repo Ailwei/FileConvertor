@@ -18,12 +18,7 @@ function Login() {
       setError('Email and password are required.');
       return;
     }
-
-<<<<<<< HEAD
     axios.post("http://localhost:3000/auth/login", { email, password })
-=======
-    axios.post("file-convertor-api.vercel.app/auth/login", { email, password })
->>>>>>> parent of 341c0e6 (Update Login.jsx)
       .then(response => {
         if (response.data.status) {
           sessionStorage.setItem('authToken', response.data.token);
@@ -37,7 +32,7 @@ function Login() {
       })
       .catch(error => {
         if (error.response) {
-         
+
           const status = error.response.status;
           if (status === 400) {
             setError('Login failed: User not registered.');
@@ -49,10 +44,10 @@ function Login() {
             setError('Login failed. Please try again.');
           }
         } else if (error.request) {
-         
+
           setError('Login failed. No response from server.');
         } else {
-          
+
           setError('Login failed. Please try again.');
         }
       });
