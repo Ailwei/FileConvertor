@@ -9,6 +9,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const axios = require('axios')
 const {UserRouter} = require('./user')
 const BillingDetails = require('../models/BillingDetails')
+const cron = require('node-cron');
 
 router.post('/create-payment-intent', verifyUser, async (req, res) => {
   const { plan, userId } = req.body;
@@ -19,9 +20,9 @@ router.post('/create-payment-intent', verifyUser, async (req, res) => {
  
 
   const prices = {
-    'free-trial': 0,
-    'basic': 5000,
-    'premium': 35000,
+    'basic': 0,
+    'premium': 50000,
+    'LifeTime': 150000,
   };
 
   const amount = prices[plan];
@@ -39,7 +40,7 @@ router.post('/create-payment-intent', verifyUser, async (req, res) => {
       return res.status(401).json({ error: 'User already has an active subscription' });
     }
 
-    if (plan === 'free-trial') {
+    if (plan === 'basic') {
       const setupIntent = await stripe.setupIntents.create({
         metadata: { userId, plan },
       });
@@ -108,10 +109,10 @@ router.post('/create-payment-intent', verifyUser, async (req, res) => {
 
 function calculateEndDate(plan) {
   const endDate = new Date();
-  if (plan === 'free-trial') {
-    endDate.setDate(endDate.getDate() + 7);
-  } else {
+  if (plan === 'premium'  || plan === 'basic') {
     endDate.setDate(endDate.getDate() + 30);
+  } else if (plan === 'lifetime') {
+    endDate.setFullYear(endDate.getFullYear() + 100);
   }
   return endDate;
 }
@@ -131,8 +132,8 @@ router.post('/update-status', verifyUser, async (req, res) => {
     if (!subscription) {
       subscription = new Subscription({ userId });
     }
-    if (status === 'trial') {
-      subscription.status = 'trial';
+    if (status === 'pending') {
+      subscription.status = 'pending';
     } else if (status === 'paid') {
       if (!paymentIntentId) {
         return res.status(401).json({ message: 'Missing payment intent ID' });
@@ -183,7 +184,7 @@ router.post('/update-status', verifyUser, async (req, res) => {
       emailSubject = 'Subscription Confirmation';
       emailText = `Dear ${fullName},\n\nYour subscription has been successfully processed.\n\nThank you for choosing our service!`;
     } else if (status === 'trial') {
-      emailSubject = 'Free Trial Confirmation';
+      emailSubject = 'basic plan Confirmation';
       emailText = `Dear ${fullName},\n\nYour free trial has been successfully activated.\n\nEnjoy your trial period!`;
     } else if (status === 'pending') {
       emailSubject = 'Subscription Confirmation Pending';
@@ -301,9 +302,9 @@ router.post('/update-plan', verifyUser, async (req, res) => {
   const { userId, newPlan } = req.body;
 
   const prices = {
-    'free-trial': 0,
-    'basic': 5000,
-    'premium': 35000,
+    'basic': 0,
+    'premium': 50000,
+    'LifeTime': 150000,
   };
 
   const newAmount = prices[newPlan];
@@ -442,6 +443,169 @@ router.delete('/cancel-subscription/:userId', verifyUser, async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+cron.schedule('* * * * *', async () => {
+  console.log('Cron job executed at:', new Date());
+  const now = new Date();
+  const reminderPeriod = 5;
+  const reminderStartDate = new Date();
+  reminderStartDate.setDate(now.getDate() + reminderPeriod);
+
+  try {
+    console.log('Reminder Start Date:', reminderStartDate);
+
+    const subscriptions = await Subscription.find({
+      status: 'pending',
+      endDate: { $gte: reminderStartDate },
+    });
+
+    console.log('Subscriptions found:', subscriptions);
+
+    for (const subscription of subscriptions) {
+      const user = await User.findById(subscription.userId);
+      if (!user) {
+        console.error(`User not found for Subscription: ${subscription.userId}`);
+        continue;
+      }
+
+      console.log('User found:', user);
+      console.log('Subscription End Date:', subscription.endDate);
+
+      const daysUntilExpiry = Math.ceil((subscription.endDate - now) / (1000 * 60 * 60 * 24));
+      console.log('Days Until Expiry:', daysUntilExpiry);
+
+      if (daysUntilExpiry > 0) {
+        if (!subscription.reminderSentDates || !subscription.reminderSentDates.includes(now.toDateString())) {
+          const emailSubject = 'Trial Expiry Reminder';
+          const emailText = `Dear ${user.firstname} ${user.lastname},\n\nYour trial subscription will expire in ${daysUntilExpiry} days. Please renew your subscription or cancel it before the expiry date.\n\nIf you do not take any action, you will be automatically upgraded to the premium plan and charged accordingly.\n\nThank you for being with us!`;
+
+          try {
+            await sendConfirmationEmail(user.email, emailSubject, emailText);
+            console.log('Reminder email sent to:', user.email);
+            subscription.reminderSentDates = subscription.reminderSentDates || [];
+            subscription.reminderSentDates.push(now.toDateString());
+            await subscription.save();
+          } catch (emailError) {
+            console.error('Error sending reminder email:', emailError.message);
+          }
+        }
+      } else {
+        const newPlan = 'premium';
+        const newAmount = 50000;
+
+        try {
+          console.log('Creating payment intent for auto-upgrade...');
+          const paymentIntent = await stripe.paymentIntents.create({
+            description: `Auto-upgrade to ${newPlan} plan`,
+            amount: newAmount,
+            currency: 'zar',
+            metadata: { userId: subscription.userId.toString(), plan: newPlan },
+            payment_method: 'pm_card_visa',
+            confirm: true,
+            off_session: true,
+          });
+
+          console.log('Payment Intent created:', paymentIntent);
+
+          if (paymentIntent.status === 'succeeded') {
+            subscription.plan = newPlan;
+            subscription.amount = newAmount;
+            subscription.intentType = 'payment';
+            subscription.paymentIntentId = paymentIntent.id;
+            subscription.status = 'paid';
+            subscription.endDate = calculateEndDate(newPlan);
+
+            await subscription.save();
+            const confirmationEmailSubject = 'Subscription Auto-Upgrade';
+            const confirmationEmailText = `Dear ${user.firstname} ${user.lastname},\n\nYour trial subscription has expired and has been automatically upgraded to the premium plan. Your card has been charged for the renewal.\n\nThank you for continuing with our service!`;
+
+            try {
+              await sendConfirmationEmail(user.email, confirmationEmailSubject, confirmationEmailText);
+              console.log('Confirmation email sent to:', user.email);
+            } catch (emailError) {
+              console.error('Error sending confirmation email:', emailError.message);
+            }
+          } else {
+            console.error(`Payment intent status: ${paymentIntent.status}`);
+            subscription.status = 'pending';
+            await subscription.save();
+          }
+
+        } catch (stripeError) {
+          console.error('Stripe error during auto-upgrade:', stripeError.message);
+          subscription.status = 'failed';
+          await subscription.save();
+        }
+      }
+    }
+
+    const paidSubscriptions = await Subscription.find({
+      status: 'paid',
+      endDate: { $lt: now },
+    });
+
+    console.log('Paid subscriptions needing renewal:', paidSubscriptions);
+
+    for (const subscription of paidSubscriptions) {
+      const user = await User.findById(subscription.userId);
+      if (!user) {
+        console.error(`User not found for Subscription: ${subscription.userId}`);
+        continue;
+      }
+
+      console.log('User found:', user);
+
+      if (subscription.plan === 'premium') {
+        const newEndDate = calculateEndDate(subscription.plan);
+
+        try {
+          console.log('Creating payment intent for renewal...');
+          const paymentIntent = await stripe.paymentIntents.create({
+            description: `Renewal for ${subscription.plan} plan`,
+            amount: subscription.amount,
+            currency: 'zar',
+            metadata: { userId: subscription.userId.toString(), plan: subscription.plan },
+            payment_method: 'pm_card_visa',
+            confirm: true,
+            off_session: true,
+          });
+
+          console.log('Payment Intent created for renewal:', paymentIntent);
+
+          if (paymentIntent.status === 'succeeded') {
+            subscription.endDate = newEndDate;
+
+            await subscription.save();
+
+            const renewalEmailSubject = 'Subscription Renewal Confirmation';
+            const renewalEmailText = `Dear ${user.firstname} ${user.lastname},\n\nYour subscription has been successfully renewed. Your new subscription period will end on ${newEndDate.toDateString()}.\n\nThank you for continuing with our service!`;
+
+            try {
+              await sendConfirmationEmail(user.email, renewalEmailSubject, renewalEmailText);
+              console.log('Renewal confirmation email sent to:', user.email);
+            } catch (emailError) {
+              console.error('Error sending renewal confirmation email:', emailError.message);
+            }
+          } else {
+            console.error(`Payment intent status: ${paymentIntent.status}`);
+            subscription.status = 'pending';
+            await subscription.save();
+          }
+
+        } catch (stripeError) {
+          console.error('Stripe error during renewal:', stripeError.message);
+          subscription.status = 'failed';
+          await subscription.save();
+        }
+      } else if (subscription.plan === 'LifeTime') {
+        console.log(`Lifetime plan for user ${user._id} does not require renewal.`);
+      }
+    }
+
+  } catch (error) {
+    console.error('Error processing subscriptions:', error.message);
+  }
+});
+
 module.exports = {
   SubscriptionRouter: router
 };
