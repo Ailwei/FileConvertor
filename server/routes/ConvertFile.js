@@ -52,16 +52,16 @@ const checkSubscription = async (req, res, next) => {
       const endTrialDate = new Date(endDate);
       const trialPeriodRemaining = Math.ceil((endTrialDate - currentDate) / (1000 * 60 * 60 * 24));
 
-      if (plan === 'free-trial' && status !== 'pending') {
+      if (plan === 'basic' && status !== 'pending') {
           return res.status(401).json({ error: 'No active free-trial subscription found' });
       }
 
-      if ((plan === 'basic' || plan === 'premium') && status !== 'paid') {
+      if ((plan === 'premium' || plan === 'LifeTime') && status !== 'paid') {
           return res.status(402).json({ error: 'No active subscription found' });
       }
 
-      if (plan === 'free-trial' && trialPeriodRemaining <= 0) {
-          return res.status(403).json({ error: 'Free trial period has expired' });
+      if (plan === 'premium' && trialPeriodRemaining <= 0) {
+          return res.status(403).json({ error: 'premium period has expired please your plan' });
       }
 
       req.subscription = {
@@ -118,13 +118,13 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     }
 
 
-    if (plan === 'free-trial' && conversionLog.conversionCount >= 10) {
-      return res.status(402).json({ error: 'Free plan allows up to 10 conversions' });
-    } else if (plan === 'basic' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg')) {
-      return res.status(403).json({ error: 'Basic plan only allows document and image conversions' });
-    } else if (plan === 'basic' && conversionLog.conversionCount >= 20) {
-      return res.status(404).json({ error: 'Basic plan allows up to 20 conversions per month' });
-    } else if (plan === 'premium' && conversionLog.conversionCount === Infinity) {
+    if (plan === 'basic' && conversionLog.conversionCount >= 10) {
+      return res.status(402).json({ error: 'Basic plan allows up to 10 conversions' });
+    } else if (plan === 'premium' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg')) {
+      return res.status(403).json({ error: 'Premium plan only allows document and image conversions' });
+    } else if (plan === 'premium' && conversionLog.conversionCount >= 100) {
+      return res.status(404).json({ error: 'Premium plan allows up to 100 conversions per month' });
+    } else if (plan === 'LifeTime' && conversionLog.conversionCount === Infinity) {
       
     }
 
@@ -299,8 +299,9 @@ router.get('/download/:filename', verifyUser, (req, res) => {
     const file = files[0];
     const readstream = gfsBucket.openDownloadStreamByName(filename);
 
-    res.set('Content-Type', file.contentType);
-    res.set('Content-Disposition', `attachment; filename="${file.filename}"`);
+    res.setHeader('Content-Type', file.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
 
     readstream.on('error', (err) => {
       console.error('Error streaming file:', err);
