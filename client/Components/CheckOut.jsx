@@ -122,7 +122,7 @@ const CheckoutForm = ({ plan, closeModal }) => {
     try {
       let response;
 
-      if (plan === 'free-trial') {
+      if (plan === 'basic') {
         const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
           payment_method: {
             card: elements.getElement(CardElement),
