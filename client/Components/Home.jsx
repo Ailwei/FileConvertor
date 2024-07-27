@@ -47,27 +47,14 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
             <div className="col-md-4 plan">
               <div className="card">
                 <div className="card-body">
-                  <h2 className="card-title">Free Trial</h2>
-                  <p className="card-text">7-day trial</p>
+                  <h2 className="card-title">Basic Plan</h2>
                   <p className="card-text">Convert up to 10 files</p>
                   <p className="card-text">Convert documents(pdf, docx)</p>
                   <p className="card-text">Convert images(png,jpeg)</p>
                   <p className="card-text">Convert video/Audio(mp4, mp3)</p>
+                  <p>Charged after trial period</p>
                   <p className="card-text"><strong>Free</strong></p>
-                  <button className="btn btn-primary" onClick={() => handlePackageSelection('free-trial')}>Start Free Trial</button>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 plan">
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">Basic</h2>
-                  <p className="card-text">Convert up to 50 files/month</p>
-                  <p className="card-text">Convert documents(pdf, docx)</p>
-                  <p className="card-text">Convert images(png,jpeg)</p>
-                  <p className="card-text">Email support</p>
-                  <p className="card-text"><strong>R50/month</strong></p>
-                  <button className="btn btn-primary" onClick={() => handlePackageSelection('basic')}>Subscribe</button>
+                  <button className="btn btn-primary" onClick={() => handlePackageSelection('basic')}>Get Started</button>
                 </div>
               </div>
             </div>
@@ -75,13 +62,27 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
               <div className="card">
                 <div className="card-body">
                   <h2 className="card-title">Premium</h2>
+                  <p className="card-text">Convert up to 100 files/month</p>
+                  <p className="card-text">Convert documents(pdf, docx)</p>
+                  <p className="card-text">Convert images(png,jpeg)</p>
+                  <p className="card-text">Convert video/Audio(mp4, mp3)</p>
+                  <p className="card-text">Email support</p>
+                  <p className="card-text"><strong>R500/month</strong></p>
+                  <button className="btn btn-primary" onClick={() => handlePackageSelection('premium')}>Get Started</button>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4 plan">
+              <div className="card">
+                <div className="card-body">
+                  <h2 className="card-title">Life Time</h2>
                   <p className="card-text">Unlimited file conversions</p>
                   <p className="card-text">Convert documents(pdf, docx)</p>
                   <p className="card-text">Convert images(png,jpeg)</p>
                   <p className="card-text">Convert video/Audio(mp4, mp3)</p>
                   <p className="card-text">Priority support</p>
-                  <p className="card-text"><strong>R350/month</strong></p>
-                  <button className="btn btn-primary" onClick={() => handlePackageSelection('premium')}>Subscribe</button>
+                  <p className="card-text"><strong>R1500/month</strong></p>
+                  <button className="btn btn-primary" onClick={() => handlePackageSelection('LifeTime')}>Get Started</button>
                 </div>
               </div>
             </div>
