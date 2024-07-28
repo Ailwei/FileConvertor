@@ -8,6 +8,9 @@ const FileConvert = ({ onClose }) => {
   const [format, setFormat] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [progress, setProgress] = useState(0);
+  const [isConverting, setIsConverting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -37,10 +40,13 @@ const FileConvert = ({ onClose }) => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (ProgressEvent) => {
+          const percentCompleted = Math.round((ProgressEvent.loaded * 100) / ProgressEvent.total)
+          setProgress(percentCompleted / 2);
+        }
       });
-
       if (response.data.message) {
-        setSuccess(response.data.message);
+        simulateConversionProgress();
       } else {
         setError('Conversion failed. Please try again.');
       }
@@ -68,7 +74,21 @@ const FileConvert = ({ onClose }) => {
       }
     }
   };
-
+  const simulateConversionProgress = () => {
+    setIsConverting(true);
+    const interval = setInterval(() => {
+      setProgress((prevProgress) => {
+        if (prevProgress >= 100) {
+          clearInterval(interval);
+          setIsConverting(false);
+          setIsComplete(true);
+          setSuccess('File converted successfully');
+          return 100;
+        }
+        return prevProgress + 10;
+      });
+    }, 500);
+  };
   return (
     <div className="modal show d-block" tabIndex="-1" role="dialog">
       <div className="modal-dialog" role="document">
@@ -109,7 +129,21 @@ const FileConvert = ({ onClose }) => {
                   <option value="png">PNG</option>
                 </select>
               </div>
-              <button type="submit" className="btn btn-primary">Convert</button>
+               {progress > 0 && (
+                <div className="progress mb-3">
+                  <div
+                    className="progress-bar"
+                    role="progressbar"
+                    style={{ width: `${progress}%` }}
+                    aria-valuenow={progress}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  >
+                     {isComplete ? 'Completed' : isConverting ? `Converting: ${progress}%` : `Uploading: ${progress}%`}
+                  </div>
+                </div>
+              )}
+              <button type="submit"  disabled={isConverting} className="btn btn-primary">Convert</button>
             </form>
           </div>
         </div>
