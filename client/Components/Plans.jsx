@@ -16,8 +16,8 @@ const countries = [
 
 const plans = [
   {
-    name: 'Free Trial',
-    planType: 'free-trial',
+    name: 'Basic',
+    planType: 'basic',
     price: 0,
     description: 'Convert up to 10 files during trial time',
     detail: 'Convert Documents pdf/docx',
@@ -26,17 +26,17 @@ const plans = [
 
   },
   {
-    name: 'Basic',
-    planType: 'basic',
-    price: 5000,
+    name: 'Premium',
+    planType: 'premium',
+    price: 50000,
     description: 'Convert up to 50 files during trial time',
     detail: 'Convert Documents pdf/docx',
     detail2: 'Convert Images png/jpeg',
   },
   {
-    name: 'Premium',
-    planType: 'premium',
-    price: 35000,
+    name: 'Life Time',
+    planType: 'LifeTime',
+    price: 150000,
     description: 'Unlimited File Conversion',
     detail: 'Convert Documents pdf/docx',
     detail1: 'Convert Video/Audio  mp3/mp4',
