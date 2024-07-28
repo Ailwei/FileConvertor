@@ -62,3 +62,10 @@
   background-color: #0056b3;
   border-color: #0056b3;
 }
+.progress {
+  height: 20px;
+}
+
+.progress-bar {
+  background-color: #4caf50;
+}
