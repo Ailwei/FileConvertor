@@ -32,7 +32,12 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Something went wrong!' });
 })
 
-mongoose.connect('mongodb://127.0.0.1:27017/ProjectDb');
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
