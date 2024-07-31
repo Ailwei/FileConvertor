@@ -5,6 +5,7 @@ const path = require('path');
 const libreofficeConvert = require('libreoffice-convert');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
+const XLSX = require('xlsx');
 const Grid = require('gridfs-stream');
 const {File} = require('../models/File');
 const {User} = require('../models/User')
@@ -37,7 +38,7 @@ conn.once('open', () => {
 const checkSubscription = async (req, res, next) => {
   try {
       const userId = req.user.userId;
-      console.log('Fetching subscription for userId:', userId);
+      console.log('Fetching subscription cfor userId:', userId);
 
       const subscription = await Subscription.findOne({ userId, status: { $in: ['paid', 'pending'] } })
         .sort({ createdAt: -1 })
@@ -120,7 +121,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
 
     if (plan === 'basic' && conversionLog.conversionCount >= 10) {
       return res.status(402).json({ error: 'Basic plan allows up to 10 conversions' });
-    } else if (plan === 'premium' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg')) {
+    } else if (plan === 'premium' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg' )) {
       return res.status(403).json({ error: 'Premium plan only allows document and image conversions' });
     } else if (plan === 'premium' && conversionLog.conversionCount >= 100) {
       return res.status(404).json({ error: 'Premium plan allows up to 100 conversions per month' });
@@ -180,6 +181,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
           .on('end', resolve)
           .on('error', reject);
       });
+      
     } else if (mimetype.startsWith('video/') && format === 'mp4') {
       convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.mp4`;
       convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
@@ -191,6 +193,79 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
           .on('end', resolve)
           .on('error', reject);
       });
+    } else if (mimetype === 'application/vnd.ms-powerpoint' || mimetype === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.pdf`;
+      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
+
+      await new Promise((resolve, reject) => {
+        libreofficeConvert.convert(fs.readFileSync(inputPath), '.pdf', undefined, (err, done) => {
+          if (err) return reject(err);
+          fs.writeFileSync(convertedFilePath, done);
+          resolve();
+        });
+      });
+    }
+      else if (mimetype.startsWith('video/')) {
+        let targetFormat = '';
+        if (format === 'mp4') targetFormat = 'mp4';
+        else if (format === 'avi') targetFormat = 'avi';
+        else if (format === 'mov') targetFormat = 'mov';
+        else if (format === 'mkv') targetFormat = 'mkv';
+        else if (format === 'wmv') targetFormat = 'wmv';
+        else if (format === 'flv') targetFormat = 'flv';
+        else if (format === 'webm') targetFormat = 'webm';
+        else if (format === 'ogv') targetFormat = 'ogv';
+        else return res.status(405).json({ error: 'Unsupported video conversion format' });
+      
+        convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.${targetFormat}`;
+        convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
+      
+        await new Promise((resolve, reject) => {
+          ffmpeg(inputPath)
+            .toFormat(targetFormat)
+            .save(convertedFilePath)
+            .on('end', resolve)
+            .on('error', reject);
+        });
+      
+      } else if (mimetype.startsWith('text/csv')) {
+        convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.xlsx`;
+        convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
+      
+        try {
+          // Ensure directory exists
+          await fs.mkdir(path.dirname(convertedFilePath), { recursive: true });
+      
+          // Read CSV file
+          const csvData = await fs.readFile(inputPath, 'utf8');
+      
+          // Parse CSV data and convert to Excel
+          const workbook = XLSX.utils.book_new();
+          const worksheet = XLSX.utils.csv_to_sheet(csvData);
+          XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+          
+          // Write Excel file
+          XLSX.writeFile(workbook, convertedFilePath);
+      
+          console.log('Excel file written successfully:', convertedFilePath);
+        } catch (err) {
+          console.error('Error converting CSV to XLSX:', err);
+        }
+      }
+      else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.csv`;
+        convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
+    
+        await new Promise((resolve, reject) => {
+          libreofficeConvert.convert(fs.readFileSync(inputPath), '.csv', undefined, (err, done) => {
+            if (err) {
+              console.error('Error converting XLSX to CSV:', err);
+              return reject(err);
+            }
+            fs.writeFileSync(convertedFilePath, done);
+            resolve();
+          });
+        });
     } else if (mimetype.startsWith('image/') && (format === 'png' || format === 'jpeg')) {
       convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.${format}`;
       convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
@@ -260,7 +335,6 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     res.status(500).json({ error: 'Failed to convert file' });
   }
 });
-
 router.get('/files', verifyUser, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -277,13 +351,9 @@ router.get('/files', verifyUser, async (req, res) => {
 
   }
 });
-router.get('/download/:filename', verifyUser, (req, res) => {
+router.get('/download/:filename', (req, res) => {
+  console.log('Received request for file:', req.params.filename);
   const filename = req.params.filename;
-
-  if (!gfsBucket) {
-    console.log('Error: GridFS stream not initialized');
-    return res.status(500).json({ error: 'Internal server error' });
-  }
 
   gfsBucket.find({ filename }).toArray((err, files) => {
     if (err) {
@@ -291,36 +361,24 @@ router.get('/download/:filename', verifyUser, (req, res) => {
       return res.status(500).json({ error: 'Internal server error' });
     }
 
-    if (!files || files.length === 0) {
-      console.log(`File not found: ${filename}`);
+    if (!files.length) {
       return res.status(404).json({ message: 'File not found' });
     }
 
     const file = files[0];
-    const readstream = gfsBucket.openDownloadStreamByName(filename);
+    const readStream = gfsBucket.openDownloadStreamByName(filename);
 
     res.setHeader('Content-Type', file.contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
-    res.setHeader('Cache-Control', 'public, max-age=3600');
 
-    readstream.on('error', (err) => {
+    readStream.on('error', (err) => {
       console.error('Error streaming file:', err);
       res.status(500).json({ error: 'Error streaming file' });
     });
 
-    readstream.on('data', (chunk) => {
-      console.log(`Streaming data chunk of size: ${chunk.length}`);
-    });
-
-    readstream.on('end', () => {
-      console.log(`Finished streaming file: ${filename}`);
-    });
-
-    readstream.pipe(res);
+    readStream.pipe(res);
   });
 });
-
-
 router.put('/updatefiles/:filename', verifyUser, async (req, res) => {
   const oldFilename = req.params.filename;
   const { newFilename } = req.body;
