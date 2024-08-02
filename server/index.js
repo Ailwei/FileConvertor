@@ -9,10 +9,12 @@ const cookieParser = require('cookie-parser');
 const {SubscriptionRouter} = require('./routes/subscription');
 const {ConvertRouter} = require('./routes/ConvertFile');
 const upload = require('./middleware/multerConfig');
+const { StorageRouter } = require('./routes/trackStorage');
 const bodyParser = require("body-parser")
 
 dotenv.config();
 
+//app.use(morgan('combined')); 
 app.use(express.json())
 app.use(cors({
     origin: ["http://localhost:5173"],
@@ -24,8 +26,9 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/auth', UserRouter)
-app.use('/auth', SubscriptionRouter);
+app.use('/auth', SubscriptionRouter)
 app.use('/auth', ConvertRouter)
+app.use('/auth', StorageRouter)
 
 app.use((err, req, res, next) => {
     console.error('Error:', err.stack);
