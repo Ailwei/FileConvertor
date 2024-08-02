@@ -127,6 +127,14 @@ const FileConvert = ({ onClose }) => {
                   <option value="mp4">MP4</option>
                   <option value="jpeg">JPEG</option>
                   <option value="png">PNG</option>
+                  <option value="xlsx">XLSX</option>
+                  <option value="csv">CSV</option>
+                  <option value="mov">MOV</option>
+                  <option value="mkv">MKV</option>
+                  <option value="avi">AVI</option>
+                  <option value="wmv">WMV</option>
+                  <option value="ogv">OGV</option>
+                  <option value="webm">WEBM</option> 
                 </select>
               </div>
                {progress > 0 && (
