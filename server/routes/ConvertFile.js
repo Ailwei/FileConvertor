@@ -233,18 +233,13 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
         convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
       
         try {
-          // Ensure directory exists
+        
           await fs.mkdir(path.dirname(convertedFilePath), { recursive: true });
-      
-          // Read CSV file
           const csvData = await fs.readFile(inputPath, 'utf8');
-      
-          // Parse CSV data and convert to Excel
           const workbook = XLSX.utils.book_new();
           const worksheet = XLSX.utils.csv_to_sheet(csvData);
           XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
           
-          // Write Excel file
           XLSX.writeFile(workbook, convertedFilePath);
       
           console.log('Excel file written successfully:', convertedFilePath);
