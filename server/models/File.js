@@ -9,7 +9,9 @@ const ConvertFileSchema = new Schema({
     format: { type: String, required: true },
     uploadedDate: { type: Date, default: Date.now },
     metadata: { type: Schema.Types.Mixed },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    allocatedStorage: { type: Number, default: 0 },
+    usedStorage: { type: Number, default: 0 }
 });
 
 
