@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import '../src/assets/convertedFiles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import jwtDecode from 'jwt-decode';
 
 const ConvertedFiles = () => {
   const [files, setFiles] = useState([]);
   const [editingFilename, setEditingFilename] = useState(null);
   const [newFilename, setNewFilename] = useState('');
   const fileRefs = useRef({});
+  const [storage, setStorage] = useState({});
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -35,9 +37,29 @@ const ConvertedFiles = () => {
           setError('No response from server. Please check your connection.');
         }
       }
-    };
+      };
+        const fetchStorage = async () => {
+          try {
+            const token = sessionStorage.getItem('authToken');
+            const decodedToken = jwtDecode(token);
+            const userId = decodedToken.userId;
 
+            const response = await axios.get(`http://localhost:3000/auth/update-storage/${userId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+
+            });
+            setStorage(response.data);
+            setError(null);
+          } catch (errror) {
+            console.error('Error fetching storage details:', error);
+            setError('Error fetching storage details. Please try again later.')
+          }
+    };
+  
     fetchFiles();
+    fetchStorage();
   }, []);
   const handleEditClick = (file) => {
     setEditingFilename(file.filename);
@@ -159,6 +181,14 @@ const ConvertedFiles = () => {
         </ul>
       ) : (
         <p>No files found.</p>
+      )}
+      {storage && (
+        <div className='storage-info'>
+        <h2>Storage Details</h2>
+        <p><strong>Allocated Storage:</strong> {storage.allocatedStorage} GB</p>
+          <p><strong>Used Storage:</strong> {storage.usedStorage} GB</p>
+          <p><strong>Remaining Storage:</strong> {storage.remainingStorage} GB</p>
+        </div>
       )}
     </div>
   );
