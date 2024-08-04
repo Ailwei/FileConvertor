@@ -3,6 +3,7 @@ import axios from 'axios';
 import '../src/assets/convertedFiles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import jwtDecode from 'jwt-decode';
+import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 
 const ConvertedFiles = () => {
   const [files, setFiles] = useState([]);
@@ -11,6 +12,8 @@ const ConvertedFiles = () => {
   const fileRefs = useRef({});
   const [storage, setStorage] = useState({});
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(3);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -21,46 +24,45 @@ const ConvertedFiles = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setFiles(response.data.files);
+        setFiles(response.data.files || []);
         setError(null);
-      }catch (err) {
+      } catch (err) {
         console.error('Error fetching files:', err);
-        if (err.response) {
-          if (err.response.status === 404) {
-            setError('No files found for the current user.');
-          } else if (err.response.status === 500) {
-            setError('Failed to fetch files. Please try again later.');
-          } else {
-            setError('An unexpected error occurred.');
-          }
-        } else {
-          setError('No response from server. Please check your connection.');
-        }
+        setError('Error fetching files. Please try again later.');
+        setFiles([]);
       }
-      };
-        const fetchStorage = async () => {
-          try {
-            const token = sessionStorage.getItem('authToken');
-            const decodedToken = jwtDecode(token);
-            const userId = decodedToken.userId;
-
-            const response = await axios.get(`http://localhost:3000/auth/update-storage/${userId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-
-            });
-            setStorage(response.data);
-            setError(null);
-          } catch (errror) {
-            console.error('Error fetching storage details:', error);
-            setError('Error fetching storage details. Please try again later.')
-          }
     };
-  
+
+    const fetchStorage = async () => {
+      try {
+        const token = sessionStorage.getItem('authToken');
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.userId;
+
+        const response = await axios.get(`http://localhost:3000/auth/update-storage/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setStorage(response.data || {});
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching storage details:', error);
+        setError('Error fetching storage details. Please try again later.');
+        setStorage({});
+      }
+    };
+
     fetchFiles();
     fetchStorage();
   }, []);
+
+  const indexOfLastFile = currentPage * itemsPerPage;
+  const indexOfFirstFile = indexOfLastFile - itemsPerPage;
+  const currentFiles = files.slice(indexOfFirstFile, indexOfLastFile);
+
+  const totalPages = Math.ceil(files.length / itemsPerPage);
+
   const handleEditClick = (file) => {
     setEditingFilename(file.filename);
     setNewFilename(file.filename);
@@ -90,19 +92,7 @@ const ConvertedFiles = () => {
       setError(null);
     } catch (err) {
       console.error('Error updating filename:', err);
-      if (err.response) {
-        if (err.response.status === 401) {
-          setError('File not found or not authorized.');
-        } else if (err.response.status === 402) {
-          setError('File not found.');
-        } else if (err.response.status === 500) {
-          setError('Error updating filename. Please try again later.');
-        } else {
-          setError('An unexpected error occurred.');
-        }
-      } else {
-        setError('No response from server. Please check your connection.');
-      }
+      setError('Error updating filename. Please try again later.');
     }
   };
 
@@ -123,73 +113,122 @@ const ConvertedFiles = () => {
       setError(null);
     } catch (err) {
       console.error('Error deleting file:', err);
-      if (err.response) {
-        if (err.response.status === 403) {
-          setError('File not found or not authorized.');
-        } else if (err.response.status === 404) {
-          setError('File not found.');
-        } else if (err.response.status === 500) {
-          setError('Error deleting file. Please try again later.');
-        } else {
-          setError('An unexpected error occurred.');
-        }
-      } else {
-        setError('No response from server. Please check your connection.');
-      }
+      setError('Error deleting file. Please try again later.');
     }
   };
 
+  const COLORS = ['#FF6384', '#36A2EB', '#FFCE56'];
+
+  const pieData = [
+    { name: 'Used Storage', value: parseFloat(storage.usedStorage) || 0 },
+    { name: 'Remaining Storage', value: parseFloat(storage.remainingStorage) || 0 },
+  ];
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   return (
-    <div className="converted-files">
-      <h1>Converted Files</h1>
-      {files.length > 0 ? (
-        <ul>
-          {files.map((file) => (
-            <li key={file.filename} ref={(el) => (fileRefs.current[file.filename] = el)}>
-              <p><strong>Original Name:</strong> {file.originalname}</p>
-              <p>
-                <strong>Filename:</strong>
-                {editingFilename === file.filename ? (
-                  <>
-                    <input
-                      type="text"
-                      value={newFilename}
-                      onChange={handleFilenameChange}
-                    />
-                    <button onClick={() => handleSaveClick(file)}>Save</button>
-                    <button onClick={handleCancelClick}>Cancel</button>
-                  </>
-                ) : (
-                  file.filename
-                )}
-              </p>
-              <p><strong>Content Type:</strong> {file.contentType}</p>
-              <p><strong>Size:</strong> {file.size} bytes</p>
-              <p><strong>Format:</strong> {file.format}</p>
-              <div>
-                <a href={`http://localhost:3000/auth/download/${file.filename}`} target="_blank" rel="noopener noreferrer">
-                  View File
-                </a>
-                <a href="#" onClick={() => handleDeleteClick(file)}>Delete</a>
-                {editingFilename !== file.filename && (
-                  <a href="#" onClick={() => handleEditClick(file)}>Edit</a>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No files found.</p>
-      )}
-      {storage && (
-        <div className='storage-info'>
-        <h2>Storage Details</h2>
-        <p><strong>Allocated Storage:</strong> {storage.allocatedStorage} GB</p>
-          <p><strong>Used Storage:</strong> {storage.usedStorage} GB</p>
-          <p><strong>Remaining Storage:</strong> {storage.remainingStorage} GB</p>
+    <div className="container mt-4">
+      {error && <p className="text-danger">{error}</p>}
+
+      <div className="card mb-4">
+        <div className="card-header">
+          <h4 className="mb-0">Storage Details</h4>
         </div>
-      )}
+        <div className="card-body">
+          {storage.allocatedStorage ? (
+            <div style={{ width: '100%', height: 300 }}>
+              <PieChart width={400} height={300}>
+                <Pie
+                  data={pieData}
+                  cx={200}
+                  cy={150}
+                  innerRadius={60}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="value"
+                  label
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </div>
+          ) : (
+            <p>No storage data available.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="card mb-4">
+        <div className="card-header">
+          <h4 className="mb-0">Converted Files</h4>
+        </div>
+        <div className="card-body">
+          {currentFiles.length > 0 ? (
+            <ul className="list-group">
+              {currentFiles.map((file) => (
+                <li key={file.filename} ref={(el) => (fileRefs.current[file.filename] = el)} className="list-group-item">
+                  <p>
+                    <strong>Filename:</strong>
+                    {editingFilename === file.filename ? (
+                      <>
+                        <input
+                          type="text"
+                          value={newFilename}
+                          onChange={handleFilenameChange}
+                        />
+                        <button onClick={() => handleSaveClick(file)} className="btn btn-primary btn-sm ms-2">Save</button>
+                        <button onClick={handleCancelClick} className="btn btn-secondary btn-sm ms-2">Cancel</button>
+                      </>
+                    ) : (
+                      file.filename
+                    )}
+                  </p>
+                  <p><strong>Format:</strong> {file.format}</p>
+                  <div>
+                    <a href={`http://localhost:3000/auth/download/${file.filename}`} target="_blank" rel="noopener noreferrer" className="btn btn-info btn-sm me-2">
+                      View File
+                    </a>
+                    <a href="#" onClick={() => handleDeleteClick(file)} className="btn btn-danger btn-sm me-2">Delete</a>
+                    {editingFilename !== file.filename && (
+                      <a href="#" onClick={() => handleEditClick(file)} className="btn btn-warning btn-sm">Edit</a>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No converted files found.</p>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <nav aria-label="Page navigation">
+              <ul className="pagination">
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Previous</button>
+                </li>
+                {[...Array(totalPages).keys()].map((pageNumber) => (
+                  <li key={pageNumber + 1} className={`page-item ${currentPage === pageNumber + 1 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => handlePageChange(pageNumber + 1)}>
+                      {pageNumber + 1}
+                    </button>
+                  </li>
+                ))}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Next</button>
+                </li>
+              </ul>
+            </nav>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
