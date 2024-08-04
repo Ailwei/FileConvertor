@@ -17,7 +17,7 @@ dotenv.config();
 //app.use(morgan('combined')); 
 app.use(express.json())
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: ["https://file-convertor-front-lxppg6wum-ailwei-portifolio.vercel.app"],
     credentials: true
 }))
 
