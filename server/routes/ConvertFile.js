@@ -102,196 +102,136 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const { originalname, filename, mimetype, size } = req.file;
+    const { originalname, buffer, mimetype, size } = req.file;
     const format = req.body.format;
-    let convertedFileName, convertedFilePath;
+    let convertedFileName, convertedBuffer;
     const { plan } = req.subscription;
-
 
     let conversionLog = await ConversionLog.findOne({ userId: req.user.userId });
 
     if (!conversionLog) {
-    
       conversionLog = new ConversionLog({
         userId: req.user.userId,
         conversionCount: 0,
       });
     }
 
-
     if (plan === 'basic' && conversionLog.conversionCount >= 10) {
       return res.status(402).json({ error: 'Basic plan allows up to 10 conversions' });
-    } else if (plan === 'premium' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg' )) {
+    } else if (plan === 'premium' && (format !== 'pdf' && format !== 'doc' && format !== 'png' && format !== 'jpeg')) {
       return res.status(403).json({ error: 'Premium plan only allows document and image conversions' });
     } else if (plan === 'premium' && conversionLog.conversionCount >= 100) {
       return res.status(404).json({ error: 'Premium plan allows up to 100 conversions per month' });
-    } else if (plan === 'LifeTime' && conversionLog.conversionCount === Infinity) {
-      
     }
 
-    const inputPath = path.join(__dirname, '../uploads', filename);
-
     if (mimetype.startsWith('application/pdf') && format === 'docx') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.docx`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(inputPath, format, undefined, (err, done) => {
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.docx')}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        libreofficeConvert.convert(buffer, format, undefined, (err, done) => {
           if (err) {
             return reject(err);
           }
-          fs.writeFileSync(convertedFilePath, done);
-          resolve();
+          resolve(done);
         });
       });
     } else if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.pdf`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(inputPath, format, undefined, (err, done) => {
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.pdf')}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        libreofficeConvert.convert(buffer, format, undefined, (err, done) => {
           if (err) {
             return reject(err);
           }
-          fs.writeFileSync(convertedFilePath, done);
-          resolve();
+          resolve(done);
         });
       });
     } else if (mimetype.startsWith('audio/') && format === 'mp3') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.mp3`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      await new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        ffmpeg()
+          .input(Readable.from(buffer))
+          .audioCodec('libmp3lame')
           .toFormat('mp3')
-          .save(convertedFilePath)
-          .on('end', resolve)
-          .on('error', reject);
+          .on('end', () => resolve(Readable.from([])))
+          .on('error', reject)
+          .pipe()
+          .on('data', (chunk) => {
+            convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
+          });
       });
     } else if (mimetype.startsWith('video/') && format === 'mp3') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.mp3`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      await new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        ffmpeg()
+          .input(Readable.from(buffer))
           .noVideo()
           .audioCodec('libmp3lame')
           .toFormat('mp3')
-          .save(convertedFilePath)
-          .on('end', resolve)
-          .on('error', reject);
-      });
-      
-    } else if (mimetype.startsWith('video/') && format === 'mp4') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.mp4`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      await new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
-          .toFormat('mp4')
-          .save(convertedFilePath)
-          .on('end', resolve)
-          .on('error', reject);
-      });
-    } else if (mimetype === 'application/vnd.ms-powerpoint' || mimetype === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.pdf`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(fs.readFileSync(inputPath), '.pdf', undefined, (err, done) => {
-          if (err) return reject(err);
-          fs.writeFileSync(convertedFilePath, done);
-          resolve();
-        });
-      });
-    }
-      else if (mimetype.startsWith('video/')) {
-        let targetFormat = '';
-        if (format === 'mp4') targetFormat = 'mp4';
-        else if (format === 'avi') targetFormat = 'avi';
-        else if (format === 'mov') targetFormat = 'mov';
-        else if (format === 'mkv') targetFormat = 'mkv';
-        else if (format === 'wmv') targetFormat = 'wmv';
-        else if (format === 'flv') targetFormat = 'flv';
-        else if (format === 'webm') targetFormat = 'webm';
-        else if (format === 'ogv') targetFormat = 'ogv';
-        else return res.status(405).json({ error: 'Unsupported video conversion format' });
-      
-        convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.${targetFormat}`;
-        convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-      
-        await new Promise((resolve, reject) => {
-          ffmpeg(inputPath)
-            .toFormat(targetFormat)
-            .save(convertedFilePath)
-            .on('end', resolve)
-            .on('error', reject);
-        });
-      
-      } else if (mimetype.startsWith('text/csv')) {
-        convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.xlsx`;
-        convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-      
-        try {
-        
-          await fs.mkdir(path.dirname(convertedFilePath), { recursive: true });
-          const csvData = await fs.readFile(inputPath, 'utf8');
-          const workbook = XLSX.utils.book_new();
-          const worksheet = XLSX.utils.csv_to_sheet(csvData);
-          XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-          
-          XLSX.writeFile(workbook, convertedFilePath);
-      
-          console.log('Excel file written successfully:', convertedFilePath);
-        } catch (err) {
-          console.error('Error converting CSV to XLSX:', err);
-        }
-      }
-      else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-        convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.csv`;
-        convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-    
-        await new Promise((resolve, reject) => {
-          libreofficeConvert.convert(fs.readFileSync(inputPath), '.csv', undefined, (err, done) => {
-            if (err) {
-              console.error('Error converting XLSX to CSV:', err);
-              return reject(err);
-            }
-            fs.writeFileSync(convertedFilePath, done);
-            resolve();
+          .on('end', () => resolve(Readable.from([])))
+          .on('error', reject)
+          .pipe()
+          .on('data', (chunk) => {
+            convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
           });
-        });
-    } else if (mimetype.startsWith('image/') && (format === 'png' || format === 'jpeg')) {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.${format}`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
-
-      const command = `magick ${inputPath} ${convertedFilePath}`;
-      console.log('Executing command:', command);
-
-      await new Promise((resolve, reject) => {
-        exec(command, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`Error converting image: ${error.message}`);
-            return reject(error);
+      });
+    } else if (mimetype.startsWith('video/') && format === 'mp4') {
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp4')}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        ffmpeg()
+          .input(Readable.from(buffer))
+          .toFormat('mp4')
+          .on('end', () => resolve(Readable.from([])))
+          .on('error', reject)
+          .pipe()
+          .on('data', (chunk) => {
+            convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
+          });
+      });
+    } else if (mimetype.startsWith('text/csv')) {
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.xlsx')}`;
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.csv_to_sheet(buffer.toString());
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+      const xlsxBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      convertedBuffer = xlsxBuffer;
+    } else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.csv')}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        libreofficeConvert.convert(buffer, '.csv', undefined, (err, done) => {
+          if (err) {
+            return reject(err);
           }
-          console.log(`stdout: ${stdout}`);
-          console.error(`stderr: ${stderr}`);
-          resolve();
+          resolve(done);
+        });
+      });
+    } else if (mimetype.startsWith('image/') && (format === 'png' || format === 'jpeg')) {
+      convertedFileName = `converted_${originalname.replace(path.extname(originalname), `.${format}`)}`;
+      convertedBuffer = await new Promise((resolve, reject) => {
+        const command = `magick convert - ${convertedFileName}`;
+        const convertProcess = exec(command, { encoding: 'buffer' });
+
+        convertProcess.stdin.end(buffer);
+        convertProcess.stdout.on('data', (chunk) => {
+          convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
+        });
+
+        convertProcess.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Conversion failed with exit code ${code}`));
+          }
         });
       });
     } else {
       return res.status(405).json({ error: 'Unsupported conversion format' });
     }
-
-    const readStream = fs.createReadStream(convertedFilePath);
     const uploadStream = gfsBucket.openUploadStream(convertedFileName, {
       contentType: mimetype,
     });
 
-    readStream.pipe(uploadStream)
+    const bufferStream = Readable.from(convertedBuffer);
+    bufferStream.pipe(uploadStream)
       .on('finish', async () => {
-        await unlinkAsync(inputPath);
-        await unlinkAsync(convertedFilePath);
         const filesCollection = mongoose.connection.db.collection('uploads.files');
         const file = await filesCollection.findOne({ filename: convertedFileName });
 
@@ -303,7 +243,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
           originalname: originalname,
           filename: convertedFileName,
           contentType: mimetype,
-          size: size,
+          size: convertedBuffer.length,
           format: format,
           userId: req.user.userId,
         });
@@ -326,7 +266,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
         res.status(500).json({ error: 'Failed to save converted file to MongoDB' });
       });
   } catch (error) {
-    console.error('Error converting file:', error);
+    console.error('Error during conversion:', error);
     res.status(500).json({ error: 'Failed to convert file' });
   }
 });
