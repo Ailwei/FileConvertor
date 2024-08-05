@@ -2,16 +2,23 @@
     "version": 2,
     "builds": [
       {
-        "src": "src/index.js",
+        "src": "vite.config.js",
         "use": "@vercel/static-build",
         "config": {
-          "distDir": "build"
+          "distDir": "dist"
         }
       }
     ],
     "rewrites": [
-      { "source": "/auth/(.*)", "destination": "file-convertor-nu.vercel.app/auth/$1" },
-      { "source": "/(.*)", "destination": "/" }
+      {
+        "source": "/auth/(.*)",
+        "destination": "https://file-convertor-nu.vercel.app/auth/$1"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/"
+      }
     ]
   }
+  
   
