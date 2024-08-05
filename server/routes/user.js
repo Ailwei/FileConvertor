@@ -38,30 +38,36 @@ router.post('/signup', async (req, res) => {
     }
 });
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ message: 'User not registered' });
-      }
-  
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        return res.status(401).json({ message: "Password is incorrect" });
-      }
-  
-      const token = jwt.sign({ userId: user._id, email: user.email}, process.env.KEY, { expiresIn: '1h' });
-      console.log("Generated token:", token);
-  
-      res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
-    
-      return res.json({ status: true, message: "Login successful", token });
-    } catch (error) {
-      console.error("Error in login:", error);
-      return res.status(500).json({ message: "Error logging in", error });
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not registered' });
     }
-  });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ message: "Password is incorrect" });
+    }
+
+    const token = jwt.sign({ userId: user._id, email: user.email }, process.env.KEY, { expiresIn: '1h' });
+    console.log("Generated token:", token);
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',    
+      maxAge: 3600000         
+    });
+
+    return res.json({ status: true, message: "Login successful", token });
+  } catch (error) {
+    console.error("Error in login:", error);
+    return res.status(500).json({ message: "Error logging in", error });
+  }
+});
+
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
