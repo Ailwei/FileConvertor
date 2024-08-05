@@ -14,7 +14,7 @@ function ResetPassword() {
         e.preventDefault();
 
 
-        axios.post(`http://localhost:3000/auth/reset-password/${token}`, { password })
+        axios.post(`https://file-convertor-nu.vercel.app/auth/reset-password/${token}`, { password })
 
             .then(response => {
                 if (response.data.message === "updated record") {

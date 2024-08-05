@@ -20,7 +20,7 @@ const UpdateProfile = ({ onClose }) => {
         if (token) {
           const decoded = jwt_decode(token);
 
-          const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
+          const userDetailsResponse = await axios.get(`https://file-convertor-nu.vercel.app/auth/user/${decoded.userId}`);
 
           const { firstname, lastname, email } = userDetailsResponse.data;
           setUserDetails({
@@ -52,7 +52,7 @@ const UpdateProfile = ({ onClose }) => {
       const token = sessionStorage.getItem('authToken');
       const decoded = jwt_decode(token);
 
-      const response = await axios.put('http://localhost:3000/auth/profile', {
+      const response = await axios.put('https://file-convertor-nu.vercel.app/auth/profile', {
         userId: decoded.userId,
         firstname: userDetails.firstname,
         lastname: userDetails.lastname,

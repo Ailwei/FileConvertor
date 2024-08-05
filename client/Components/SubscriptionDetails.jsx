@@ -4,10 +4,12 @@ import jwt_decode from 'jwt-decode';
 //import '../src/assets/subscriptionDetails.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+
 const SubscriptionDetails = () => {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancelStatus, setCancellationStatus] = useState(null);
 
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
@@ -22,9 +24,10 @@ const SubscriptionDetails = () => {
       const userId = decodedToken.userId;
 
       try {
-        const response = await axios.get(`http://localhost:3000/auth/current-subscription/${userId}`);
+        const response = await axios.get(`https://file-convertor-nu.vercel.app/auth/current-subscription/${userId}`);
         setSubscription(response.data);
         setError(null);
+        setCancellationStatus(null);
       } catch (err) {
         if (err.response) {
           if (err.response.status === 406) {
@@ -59,14 +62,26 @@ const SubscriptionDetails = () => {
     const userId = decodedToken.userId;
 
     try {
-      await axios.delete(`http://localhost:3000/auth/cancel-subscription/${userId}`);
+      const response = await axios.delete(`https://file-convertor-nu.vercel.app/auth/cancel-subscription/${userId}`);
+
+      if (response.data.message.includes('LifeTime')) {
+        setCancellationStatus('Lifetime plans cannot be cancelled.');
+      } else {
+        setCancellationStatus('Your subscription will be cancelled at the end of the current period.');
+
+      }
       setSubscription(null);
       setError(null);
+      
+    
     } catch (err) {
       if (err.response) {
-        if (err.response.status === 407) {
+        if (err.response.status === 409) {
           setError('User not found');
-        } else if (err.response.status === 500) {
+        } else if (err.response.status === 400) {
+              setError('Lifetime plans cannot be cancelled')
+
+            } else if (err.response.status === 500) {
           setError('Internal server error. Please try again later.');
         } else {
           setError('An unexpected error occurred.');
@@ -88,18 +103,22 @@ const SubscriptionDetails = () => {
   if (!subscription) {
     return <p className="text-center">No active subscription found</p>;
   }
-
+  const isLifetime = subscription.plan.toLowerCase() === 'lifetime';
   return (
     <div className="container mt-4">
       <div className="card p-4 shadow-sm">
         <h2 className="card-title mb-4">Current Subscription Details</h2>
         <div className="mb-3">
+          {cancelStatus && <p className="text-warning text-center">{cancelStatus}</p>}
           <p><strong>Plan:</strong> {subscription.plan}</p>
-          <p><strong>Amount:</strong> {subscription.amount / 100} ZAR</p>
+          <p><strong>Amount:</strong> {subscription.amount / 100} {subscription.currency}</p>
           <p><strong>Status:</strong> {subscription.status}</p>
-          <p><strong>Expiry Date:</strong> {new Date(subscription.endDate).toLocaleDateString()}</p>
+          <p><strong>Expiry Date:</strong> {isLifetime ? 'No Expiry Date For this Plan' : new Date(subscription.endDate).toLocaleDateString()}</p>
+          <p><strong>Days Remaining:</strong> {isLifetime ? 'Unlimited' : `${subscription.daysRemaining} days`}</p>
         </div>
-        <button className="btn btn-danger" onClick={handleCancelSubscription}>Cancel Subscription</button>
+        {!isLifetime && (
+          <button className="btn btn-danger" onClick={handleCancelSubscription}>Cancel Subscription</button>
+        )}
       </div>
     </div>
   );
