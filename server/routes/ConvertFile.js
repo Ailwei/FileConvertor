@@ -125,6 +125,8 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     } else if (plan === 'premium' && conversionLog.conversionCount >= 100) {
       return res.status(404).json({ error: 'Premium plan allows up to 100 conversions per month' });
     }
+
+
     const tempFile = tmp.fileSync({ postfix: path.extname(originalname) });
     fs.writeFileSync(tempFile.name, buffer);
 
@@ -141,13 +143,9 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
         convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
         const result = await ConvertAPI.convert('mp3', { File: tempFile.name }, 'audio');
         convertedBuffer = result.file;
-      } else if (mimetype.startsWith('video/') && format === 'mp3') {
-        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
-        const result = await ConvertAPI.convert('mp3', { File: tempFile.name }, 'video');
-        convertedBuffer = result.file;
-      } else if (mimetype.startsWith('video/') && format === 'mp4') {
-        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp4')}`;
-        const result = await ConvertAPI.convert('mp4', { File: tempFile.name }, 'video');
+      } else if (mimetype.startsWith('video/') && (format === 'mp4' || format === 'webm')) {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), `.${format}`)}`;
+        const result = await ConvertAPI.convert(format, { File: tempFile.name }, 'video');
         convertedBuffer = result.file;
       } else if (mimetype.startsWith('text/csv') && format === 'xlsx') {
         convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.xlsx')}`;
@@ -186,7 +184,6 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
         if (!file) {
           throw new Error('Failed to retrieve file metadata');
         }
-
         const newFile = new File({
           originalname: originalname,
           filename: convertedFileName,
@@ -218,6 +215,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     res.status(500).json({ error: 'Failed to convert file' });
   }
 });
+
 router.get('/files', verifyUser, async (req, res) => {
   try {
     const userId = req.user.userId;
