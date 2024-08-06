@@ -43,6 +43,7 @@ const FileConvert = ({ onClose }) => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        withCredentials: true,
         onUploadProgress: (ProgressEvent) => {
           const percentCompleted = Math.round((ProgressEvent.loaded * 100) / ProgressEvent.total)
           setProgress(percentCompleted / 2);
