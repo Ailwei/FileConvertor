@@ -12,6 +12,7 @@ const {User} = require('../models/User')
 const mongoose = require('mongoose');
 const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
+const tmp = require('tmp');
 const { verifyUser } = require('./user');
 const { GridFSBucket } = require('mongodb');
 const imagemagick = require('imagemagick');
