@@ -5,6 +5,7 @@ const path = require('path');
 const libreofficeConvert = require('libreoffice-convert');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
+const { Readable } = require('stream');
 const XLSX = require('xlsx');
 const Grid = require('gridfs-stream');
 const {File} = require('../models/File');
