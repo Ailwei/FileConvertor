@@ -36,7 +36,7 @@ const FileConvert = ({ onClose }) => {
 
     try {
 
-      const response = await axios.post('https://file-convertor-nu.vercel.app/auth/convert', formData, {
+       const response = await axios.post(`https://v2.convertapi.com/convert/${format}/to/${format}?Secret=${import.meta.env.VITE_CONVERT_API_KEY}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
