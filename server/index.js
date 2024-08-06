@@ -3,6 +3,7 @@ const dotenv = require('dotenv')
 const mongoose = require('mongoose')
 const morgan = require('morgan');
 const {UserRouter} = require('./routes/user')
+const path = require('path');
 const app = express()
 const cors = require('cors')
 const cookieParser = require('cookie-parser');
