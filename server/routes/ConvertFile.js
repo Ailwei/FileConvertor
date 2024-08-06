@@ -17,7 +17,7 @@ const { GridFSBucket } = require('mongodb');
 const imagemagick = require('imagemagick');
 const { exec } = require('child_process');
 const ConversionLog = require('../models/ConversionLog');
-
+const convertApi = new ConvertApi(process.env.CONVERT_API_SECRET);
 const Subscription = require('../models/Subscription')
 
 
@@ -125,15 +125,11 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     }
 
     if (mimetype.startsWith('application/pdf') && format === 'docx') {
+      const result = await ConvertAPI.convert('docx', {
+        File: inputFilePath
+      }, 'pdf');
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.docx')}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(buffer, format, undefined, (err, done) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(done);
-        });
-      });
+      
     } else if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.pdf')}`;
       convertedBuffer = await new Promise((resolve, reject) => {
