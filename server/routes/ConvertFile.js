@@ -17,7 +17,7 @@ const { GridFSBucket } = require('mongodb');
 const imagemagick = require('imagemagick');
 const { exec } = require('child_process');
 const ConversionLog = require('../models/ConversionLog');
-const convertApi = new ConvertApi(process.env.CONVERT_API_SECRET);
+const convertApi = new convertApi(process.env.CONVERT_API_SECRET);
 const Subscription = require('../models/Subscription')
 
 
@@ -125,7 +125,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     }
 
     if (mimetype.startsWith('application/pdf') && format === 'docx') {
-      const result = await ConvertAPI.convert('docx', {
+      const result = await convertApi.convert('docx', {
         File: inputFilePath
       }, 'pdf');
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.docx')}`;
