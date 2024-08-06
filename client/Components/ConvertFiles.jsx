@@ -29,7 +29,7 @@ const FileConvert = ({ onClose }) => {
       setError('Please select a file and a format.');
       return;
     }
-    const sourceFormat = getSourceFormat(file);
+    const sourceFormat = sourceFormat(file);
   if (!sourceFormat) {
     setError('Unsupported file format.');
     return;
