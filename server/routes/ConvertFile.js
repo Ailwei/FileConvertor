@@ -102,7 +102,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const { originalname, buffer, mimetype, size } = req.file;
+    const { originalname, buffer, mimetype } = req.file;
     const format = req.body.format;
     let convertedFileName, convertedBuffer;
     const { plan } = req.subscription;
@@ -123,58 +123,54 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     } else if (plan === 'premium' && conversionLog.conversionCount >= 100) {
       return res.status(404).json({ error: 'Premium plan allows up to 100 conversions per month' });
     }
+    const tempFile = tmp.fileSync({ postfix: path.extname(originalname) });
+    fs.writeFileSync(tempFile.name, buffer);
 
-    if (mimetype.startsWith('application/pdf') && format === 'docx') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.docx')}`;
-      const result = await ConvertAPI.convert('docx', {
-        File: buffer,
-      }, 'pdf');
-      convertedBuffer = result.file; 
-    } else if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.pdf')}`;
-      const result = await ConvertAPI.convert('pdf', {
-        File: buffer,
-      }, 'docx');
-      convertedBuffer = result.file; 
-    } else if (mimetype.startsWith('audio/') && format === 'mp3') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
-      const result = await ConvertAPI.convert('mp3', {
-        File: buffer,
-      }, 'audio');
-      convertedBuffer = result.file; 
-    } else if (mimetype.startsWith('video/') && format === 'mp3') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
-      const result = await ConvertAPI.convert('mp3', {
-        File: buffer,
-      }, 'video');
-      convertedBuffer = result.file; 
-    } else if (mimetype.startsWith('video/') && format === 'mp4') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp4')}`;
-      const result = await ConvertAPI.convert('mp4', {
-        File: buffer,
-      }, 'video');
-      convertedBuffer = result.file; 
-    } else if (mimetype.startsWith('text/csv') && format === 'xlsx') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.xlsx')}`;
-      const result = await ConvertAPI.convert('xlsx', {
-        File: buffer,
-      }, 'csv');
-      convertedBuffer = result.file; 
-    } else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' && format === 'csv') {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.csv')}`;
-      const result = await ConvertAPI.convert('csv', {
-        File: buffer,
-      }, 'xlsx');
-      convertedBuffer = result.file;
-    } else if (mimetype.startsWith('image/') && (format === 'png' || format === 'jpeg')) {
-      convertedFileName = `converted_${originalname.replace(path.extname(originalname), `.${format}`)}`;
-      const result = await ConvertAPI.convert(format, {
-        File: buffer,
-      }, 'image');
-      convertedBuffer = result.file;
-    } else {
-      return res.status(405).json({ error: 'Unsupported conversion format' });
+    try {
+      if (mimetype.startsWith('application/pdf') && format === 'docx') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.docx')}`;
+        const result = await ConvertAPI.convert('docx', { File: tempFile.name }, 'pdf');
+        convertedBuffer = result.file;
+      } else if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.pdf')}`;
+        const result = await ConvertAPI.convert('pdf', { File: tempFile.name }, 'docx');
+        convertedBuffer = result.file;
+      } else if (mimetype.startsWith('audio/') && format === 'mp3') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
+        const result = await ConvertAPI.convert('mp3', { File: tempFile.name }, 'audio');
+        convertedBuffer = result.file;
+      } else if (mimetype.startsWith('video/') && format === 'mp3') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
+        const result = await ConvertAPI.convert('mp3', { File: tempFile.name }, 'video');
+        convertedBuffer = result.file;
+      } else if (mimetype.startsWith('video/') && format === 'mp4') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp4')}`;
+        const result = await ConvertAPI.convert('mp4', { File: tempFile.name }, 'video');
+        convertedBuffer = result.file;
+      } else if (mimetype.startsWith('text/csv') && format === 'xlsx') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.xlsx')}`;
+        const result = await ConvertAPI.convert('xlsx', { File: tempFile.name }, 'csv');
+        convertedBuffer = result.file;
+      } else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' && format === 'csv') {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.csv')}`;
+        const result = await ConvertAPI.convert('csv', { File: tempFile.name }, 'xlsx');
+        convertedBuffer = result.file;
+      } else if (mimetype.startsWith('image/') && (format === 'png' || format === 'jpeg')) {
+        convertedFileName = `converted_${originalname.replace(path.extname(originalname), `.${format}`)}`;
+        const result = await ConvertAPI.convert(format, { File: tempFile.name }, 'image');
+        convertedBuffer = result.file;
+      } else {
+        tempFile.removeCallback();
+        return res.status(405).json({ error: 'Unsupported conversion format' });
+      }
+    } catch (error) {
+      tempFile.removeCallback();
+      console.error('Error during conversion:', error);
+      return res.status(500).json({ error: 'Failed to convert file' });
     }
+
+    tempFile.removeCallback();
+
     const uploadStream = gfsBucket.openUploadStream(convertedFileName, {
       contentType: mimetype,
     });
