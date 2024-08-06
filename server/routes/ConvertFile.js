@@ -17,7 +17,7 @@ const { GridFSBucket } = require('mongodb');
 const imagemagick = require('imagemagick');
 const { exec } = require('child_process');
 const ConversionLog = require('../models/ConversionLog');
-const convertApi = require('convertapi')(process.env.CONVERT_API_SECRET);
+const ConvertAPI = require('convertapi')(process.env.CONVERT_API_SECRET);
 const Subscription = require('../models/Subscription')
 
 
@@ -125,99 +125,53 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     }
 
     if (mimetype.startsWith('application/pdf') && format === 'docx') {
-      const result = await convertApi.convert('docx', {
-        File: inputFilePath
-      }, 'pdf');
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.docx')}`;
-      
+      const result = await ConvertAPI.convert('docx', {
+        File: buffer,
+      }, 'pdf');
+      convertedBuffer = result.file; 
     } else if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.pdf')}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(buffer, format, undefined, (err, done) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(done);
-        });
-      });
+      const result = await ConvertAPI.convert('pdf', {
+        File: buffer,
+      }, 'docx');
+      convertedBuffer = result.file; 
     } else if (mimetype.startsWith('audio/') && format === 'mp3') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        ffmpeg()
-          .input(Readable.from(buffer))
-          .audioCodec('libmp3lame')
-          .toFormat('mp3')
-          .on('end', () => resolve(Readable.from([])))
-          .on('error', reject)
-          .pipe()
-          .on('data', (chunk) => {
-            convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
-          });
-      });
+      const result = await ConvertAPI.convert('mp3', {
+        File: buffer,
+      }, 'audio');
+      convertedBuffer = result.file; 
     } else if (mimetype.startsWith('video/') && format === 'mp3') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp3')}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        ffmpeg()
-          .input(Readable.from(buffer))
-          .noVideo()
-          .audioCodec('libmp3lame')
-          .toFormat('mp3')
-          .on('end', () => resolve(Readable.from([])))
-          .on('error', reject)
-          .pipe()
-          .on('data', (chunk) => {
-            convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
-          });
-      });
+      const result = await ConvertAPI.convert('mp3', {
+        File: buffer,
+      }, 'video');
+      convertedBuffer = result.file; 
     } else if (mimetype.startsWith('video/') && format === 'mp4') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.mp4')}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        ffmpeg()
-          .input(Readable.from(buffer))
-          .toFormat('mp4')
-          .on('end', () => resolve(Readable.from([])))
-          .on('error', reject)
-          .pipe()
-          .on('data', (chunk) => {
-            convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
-          });
-      });
-    } else if (mimetype.startsWith('text/csv')) {
+      const result = await ConvertAPI.convert('mp4', {
+        File: buffer,
+      }, 'video');
+      convertedBuffer = result.file; 
+    } else if (mimetype.startsWith('text/csv') && format === 'xlsx') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.xlsx')}`;
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.csv_to_sheet(buffer.toString());
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-      const xlsxBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-      convertedBuffer = xlsxBuffer;
-    } else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      const result = await ConvertAPI.convert('xlsx', {
+        File: buffer,
+      }, 'csv');
+      convertedBuffer = result.file; 
+    } else if (mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' && format === 'csv') {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), '.csv')}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(buffer, '.csv', undefined, (err, done) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(done);
-        });
-      });
+      const result = await ConvertAPI.convert('csv', {
+        File: buffer,
+      }, 'xlsx');
+      convertedBuffer = result.file;
     } else if (mimetype.startsWith('image/') && (format === 'png' || format === 'jpeg')) {
       convertedFileName = `converted_${originalname.replace(path.extname(originalname), `.${format}`)}`;
-      convertedBuffer = await new Promise((resolve, reject) => {
-        const command = `magick convert - ${convertedFileName}`;
-        const convertProcess = exec(command, { encoding: 'buffer' });
-
-        convertProcess.stdin.end(buffer);
-        convertProcess.stdout.on('data', (chunk) => {
-          convertedBuffer = Buffer.concat([convertedBuffer || Buffer.alloc(0), chunk]);
-        });
-
-        convertProcess.on('close', (code) => {
-          if (code === 0) {
-            resolve();
-          } else {
-            reject(new Error(`Conversion failed with exit code ${code}`));
-          }
-        });
-      });
+      const result = await ConvertAPI.convert(format, {
+        File: buffer,
+      }, 'image');
+      convertedBuffer = result.file;
     } else {
       return res.status(405).json({ error: 'Unsupported conversion format' });
     }
