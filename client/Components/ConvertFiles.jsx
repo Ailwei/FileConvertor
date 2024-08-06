@@ -42,6 +42,7 @@ const FileConvert = ({ onClose }) => {
        const response = await axios.post(`https://v2.convertapi.com/convert/${sourceFormat}/to/${format}?Secret=${import.meta.env.VITE_CONVERT_API_KEY}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
         },
         withCredentials: true,
         onUploadProgress: (ProgressEvent) => {
