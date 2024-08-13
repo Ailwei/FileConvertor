@@ -9,7 +9,7 @@
         }
       }
     ],
-    "routes": [
+    "rewrite": [
       {
         "src": "/auth/(.*)",
         "dest": "/auth/$1"
