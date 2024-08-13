@@ -27,7 +27,7 @@ const Dashboard = ({ selectedPackage }) => {
       return;
     }
 
-    axios.get('https://file-convertor-nu.vercel.app/auth/verify', {
+    axios.get('https://51.21.127.210/auth/verify', {
 
       headers: {
         Authorization: `Bearer ${authToken}`
@@ -53,7 +53,7 @@ const Dashboard = ({ selectedPackage }) => {
   }, [location]);
 
   const handleLogout = () => {
-    axios.get('https://file-convertor-nu.vercel.app/auth/logout')
+    axios.get('https://51.21.127.210/auth/logout')
       .then(res => {
         if (res.data.status) {
           sessionStorage.removeItem('authToken');

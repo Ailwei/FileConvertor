@@ -20,7 +20,7 @@ function Signup() {
       return;
     }
 
-    axios.post("https://file-convertor-nu.vercel.app/auth/signup", { firstname, lastname, email, password })
+    axios.post("https://51.21.127.210/auth/signup", { firstname, lastname, email, password })
       .then(response => {
         console.log(response.data);
         navigate('/login');

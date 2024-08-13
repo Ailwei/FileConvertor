@@ -24,7 +24,7 @@ const SubscriptionDetails = () => {
       const userId = decodedToken.userId;
 
       try {
-        const response = await axios.get(`https://file-convertor-nu.vercel.app/auth/current-subscription/${userId}`);
+        const response = await axios.get(`https://51.21.127.210/auth/current-subscription/${userId}`);
         setSubscription(response.data);
         setError(null);
         setCancellationStatus(null);
@@ -62,7 +62,7 @@ const SubscriptionDetails = () => {
     const userId = decodedToken.userId;
 
     try {
-      const response = await axios.delete(`https://file-convertor-nu.vercel.app/auth/cancel-subscription/${userId}`);
+      const response = await axios.delete(`https://51.21.127.210/auth/cancel-subscription/${userId}`);
 
       if (response.data.message.includes('LifeTime')) {
         setCancellationStatus('Lifetime plans cannot be cancelled.');

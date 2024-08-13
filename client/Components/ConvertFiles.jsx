@@ -29,22 +29,17 @@ const FileConvert = ({ onClose }) => {
       setError('Please select a file and a format.');
       return;
     }
-    const sourceFormat = sourceFormat(file);
-  if (!sourceFormat) {
-    setError('Unsupported file format.');
-    return;
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('format', format);
 
     try {
-       const response = await axios.post(`https://v2.convertapi.com/convert/${sourceFormat}/to/${format}?Secret=${import.meta.env.VITE_CONVERT_API_KEY}`, formData, {
+
+      const response = await axios.post('http://51.21.127.210/auth/convert', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
         },
-        withCredentials: true,
         onUploadProgress: (ProgressEvent) => {
           const percentCompleted = Math.round((ProgressEvent.loaded * 100) / ProgressEvent.total)
           setProgress(percentCompleted / 2);

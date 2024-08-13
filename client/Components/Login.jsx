@@ -18,7 +18,7 @@ function Login() {
       setError('Email and password are required.');
       return;
     }
-    axios.post("https://file-convertor-nu.vercel.app/auth/login", { email, password })
+    axios.post("https://51.21.127.210/auth/login", { email, password })
       .then(response => {
         if (response.data.status) {
           sessionStorage.setItem('authToken', response.data.token);
