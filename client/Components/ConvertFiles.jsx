@@ -36,7 +36,7 @@ const FileConvert = ({ onClose }) => {
 
     try {
 
-      const response = await axios.post('http://51.21.127.210/auth/convert', formData, {
+      const response = await axios.post('https://51.21.127.210/auth/convert', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
