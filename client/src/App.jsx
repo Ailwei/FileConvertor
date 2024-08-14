@@ -12,7 +12,6 @@ import '../src/assets/app.css';
 import Plans from '../Components/Plans'
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import NotFound from '../Components/notFound';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -54,7 +53,6 @@ function App() {
               <Plans plan={selectedPackage} closeModal={closeModal} />
             } 
           />
-          <Route path="*" element={<NotFound />} />
       </Routes>
       
 
