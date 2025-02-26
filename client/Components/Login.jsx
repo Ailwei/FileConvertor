@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './header';
+import Footer from  './footer';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -54,6 +56,8 @@ function Login() {
   };
 
   return (
+    <div>
+      <Header/>
     <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card p-4 shadow-lg" style={{ maxWidth: '400px', width: '100%' }}>
         <h1 className="text-center mb-4">Login</h1>
@@ -90,6 +94,9 @@ function Login() {
           <p>Need an account? <Link to="/signup" className="btn btn-link">Sign up</Link></p>
         </div>
       </div>
+     
+    </div>
+    <Footer/>
     </div>
   );
 }

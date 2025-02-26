@@ -2,6 +2,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './header';
+import Footer from  './footer';
 //import '../src/assets/SignUp.css';
 
 function Signup() {
@@ -36,6 +38,9 @@ function Signup() {
   };
 
   return (
+    <div>
+      <Header/>
+    
     <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card p-4 shadow-lg" style={{ maxWidth: '500px', width: '100%' }}>
         <h1 className="text-center mb-4">Sign Up</h1>
@@ -96,6 +101,8 @@ function Signup() {
           </p>
         </form>
       </div>
+    </div>
+    <Footer/>
     </div>
   );
 }

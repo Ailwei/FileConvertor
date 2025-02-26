@@ -17,8 +17,9 @@ function ForgotPassword() {
             return;
         }
 
-        axios.post("file-convertor-api.vercel.app/auth/forgot-password", { email })
+        axios.post("http://localhost:3000/auth/forgot-password", { email })
             .then(response => {
+                console.log('Response:', response.data);
                 if (response.data.status) {
                     alert("Check your email for reset instructions");
                     navigate('/login');
