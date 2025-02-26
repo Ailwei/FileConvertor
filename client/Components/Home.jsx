@@ -2,6 +2,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import '../src/assets/app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import AboutUs from './aboutUs';
+import Footer from './footer';
+import Header from './header';
 
 const Home = ({ setSelectedPackage, isLoggedIn }) => {
   const navigate = useNavigate();
@@ -19,25 +22,7 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
 
   return (
     <div className="landing-page">
-      <header className="header bg-light py-3">
-        <div className="container">
-          <nav className="navbar navbar-expand-lg navbar-light">
-            <Link className="navbar-brand" to="/">
-              File Conversion Service
-            </Link>
-            <div className="collapse navbar-collapse">
-              <ul className="navbar-nav d-flex flex-row ml-auto">
-                <li className="nav-item">
-                  <Link to="/login" className="nav-link">Login</Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/signup" className="nav-link">Register</Link>
-                </li>
-              </ul>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header/>
 
       <section className="hero py-5 text-center">
         <div className="container">
@@ -90,20 +75,13 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
         </div>
       </section>
 
-      <section className="about py-5">
-        <div className="container">
-          <h2>About Us</h2>
-          <p>
-          File Conversion Service is a comprehensive platform designed to streamline the process of converting various types of files efficiently and effectively. Built with a modern tech stack including Node.js, Express.js, MongoDB, React, and Stripe, this application offers a seamless experience for users to manage their file conversion needs.
-          </p>
-        </div>
+      <section className="about py-5" bgcolor="blue">
+        <AboutUs/>
       </section>
       
-      <footer className="footer bg-light py-3">
-        <div className="container text-center">
-          <p>&copy; 2024 File Conversion Service. All rights reserved.</p>
-        </div>
-      </footer>
+      <section className="footer-section">
+        <Footer />
+      </section>
     </div>
   );
 };

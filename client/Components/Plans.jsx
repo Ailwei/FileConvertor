@@ -5,7 +5,7 @@ import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button, Alert } from 'react-bootstrap';
-import '../src/assets/Plan.css';
+// import '../src/assets/Plan.css';
 
 const countries = [
   { code: 'US', name: 'United States' },
