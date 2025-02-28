@@ -9,7 +9,9 @@ import SubscriptionDetails from '../Components/SubscriptionDetails';
 import '../src/assets/Dashboard.css';
 import PropTypes from 'prop-types';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Plans from  '../Components/Plans';
+import Plans from '../Components/Plans';
+import Header from '../Components/header';
+import Footer from '../Components/footer'; 
 
 axios.defaults.withCredentials = true;
 
@@ -28,7 +30,6 @@ const Dashboard = ({ selectedPackage }) => {
     }
 
     axios.get('http://localhost:3000/auth/verify', {
-
       headers: {
         Authorization: `Bearer ${authToken}`
       }
@@ -72,37 +73,15 @@ const Dashboard = ({ selectedPackage }) => {
 
   return (
     <div className="dashboard container">
-      <header className="header">
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-          <div className="container-fluid">
-            <span className="navbar-brand">File Conversion Service</span>
-            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav ml-auto">
-                <li className="nav-item">
-                  <button className="btn btn-primary me-2" onClick={() => setShowFileConvert(true)}>Convert Files</button>
-                </li>
-                <li className="nav-item">
-                  <button className="btn btn-secondary me-2" onClick={() => setShowUpdateProfile(true)}>Update Profile</button>
-                </li>
-                <li className="nav-item">
-                  <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </header>
-
+      <Header setShowFileConvert={setShowFileConvert} setShowUpdateProfile={setShowUpdateProfile} /> {/* Pass the functions to Header */}
+      
       {showFileConvert && <FileConvert onClose={() => setShowFileConvert(false)} />}
       {showUpdateProfile && <UpdateProfile onClose={() => setShowUpdateProfile(false)} />}
       {showSubscriptionModal && (
         <Subscription plan={selectedPackage} closeModal={closeModal} />
       )}
       <section>
-     <Plans/>
+        <Plans />
       </section>
 
       <section className="my-5">
@@ -123,6 +102,7 @@ const Dashboard = ({ selectedPackage }) => {
           </div>
         </div>
       </section>
+      <Footer /> 
     </div>
   );
 };

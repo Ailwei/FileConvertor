@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+
 const Footer = () => {
   return (
     <footer className="footer bg-light py-3">
@@ -8,7 +9,8 @@ const Footer = () => {
         <div className="row">
           <div className="col-md-4">
             <h5>File Conversion Service</h5>
-            <p>&copy; 2024 File Conversion Service. All rights reserved.</p>
+            <p>&copy; 2024 File Conversion Service</p>
+            <p>All rights reserved </p>
           </div>
           <div className="col-md-4">
             <h5>Links</h5>

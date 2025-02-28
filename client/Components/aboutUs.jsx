@@ -1,4 +1,6 @@
 import React from "react";
+import '../src/assets/app.css';
+
 
 const AboutUs = () => {
     return(

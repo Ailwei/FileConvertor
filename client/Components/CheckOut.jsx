@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from '@stripe/react-stripe-js';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import jwt_decode from 'jwt-decode';
 import '../src/assets/Checkout.css';
-
 
 const countries = [
   { code: 'US', name: 'United States' },
@@ -13,14 +11,14 @@ const countries = [
   { code: 'ZA', name: 'South Africa' },
 ];
 
-const CheckoutForm = ({ plan, closeModal }) => {
+const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState();
-  const [activatePlan, setActivePlan] = useState();
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState(plan?.price || 0);
+  const Id = sessionStorage.getItem('userId');
   const [billingDetails, setBillingDetails] = useState({
     fullname: '',
     email: '',
@@ -29,79 +27,36 @@ const CheckoutForm = ({ plan, closeModal }) => {
     postalCode: '',
     country: '',
   });
-  const [decodedToken, setDecodedToken] = useState(null);
+  console.log("userId", Id)
+  console.log("fhfhhg", price)
+
   useEffect(() => {
-    const fetchActivePlan = async () => {
-      try {
-        if (decodedToken) {
-          const response = await axios.get(`http://localhost:3000/auth/current-subscription/${decodedToken.userId}`);
-          if (response.status === 200) {
-            setActivePlan(response.data.activePlan);
-            setError(null);
-          }
-        }
-      } catch (error) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            setError('Invalid plan selected');
-          } else if (error.response.status === 401) {
-            setError('User already has an active subscription');
-          } else if (error.response.status === 500) {
-            setError('Internal server error while fetching active plan');
-          } else {
-            setError('Error fetching active plan: ' + (error.response.data.error || error.message));
-          }
-        } else {
-          setError('Network or server error');
-        }
-        console.error('Error fetching active plan:', error);
-      }
-    };
-    fetchActivePlan();
-  }, [decodedToken]);
+    if (plan?.price) {
+      setPrice(plan.price);
+    }
+  }, [plan]);
+
   useEffect(() => {
     const fetchUserDetails = async () => {
+      console.log('userId received in CheckoutForm:', Id);
+
       try {
-        const token = sessionStorage.getItem('authToken');
-        if (token) {
-          const decoded = jwt_decode(token);
-          setDecodedToken(decoded);
-
-          const userDetailsResponse = await axios.get(`http://localhost:3000/auth/user/${decoded.userId}`);
-          const { firstname, lastname, email } = userDetailsResponse.data;
-          setBillingDetails((prevDetails) => ({
-            ...prevDetails,
-            fullname: `${firstname} ${lastname}`,
-            email,
-          }));
-
-          const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
-            plan,
-            userId: decoded.userId,
-          });
-
-          setClientSecret(paymentIntentResponse.data.clientSecret);
-          setPrice(paymentIntentResponse.data.amount);
-        }
+        const response = await axios.get(`http://localhost:3000/auth/user/${Id}`);
+        const { firstname, lastname, email } = response.data;
+        setBillingDetails((prevDetails) => ({
+          ...prevDetails,
+          fullname: `${firstname} ${lastname}`,
+          email,
+          
+        }));
       } catch (error) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            setError('Invalid plan selected');
-          } else if (error.response.status === 401) {
-            setError('User already has an active subscription');
-          } else if (error.response.status === 500) {
-            setError('Internal server error while fetching client secret');
-          } else {
-            setError('Error fetching client secret: ' + (error.response.data.error || error.message));
-          }
-        } else {
-          setError('Network or server error');
-        }
-        console.error('Error fetching client secret:', error);
+        setError('Error fetching user details: ' + (error.response?.data?.message || error.message));
+        console.error('Error fetching user details:', error);
       }
-    }; 
+    };
+
     fetchUserDetails();
-  }, [plan]);
+  }, [userId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -114,114 +69,93 @@ const CheckoutForm = ({ plan, closeModal }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!stripe || !elements || !clientSecret || !decodedToken) {
+    if (!stripe || !elements|| !clientSecret) {
+      console.log("stripe", stripe)
+      setError('Stripe or Elements not loaded');
       return;
     }
+
     setLoading(true);
-    setError(null);
+
     try {
-      let response;
+      const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
+        plan: plan.planType,
+        Id,
+      });
+      console.log("selected plan", plan.planType, plan.price, price)
 
-      if (plan === 'basic') {
-        const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
-          payment_method: {
-            card: elements.getElement(CardElement),
-            billing_details: {
-              name: billingDetails.fullname,
-              email: billingDetails.email,
-              address: {
-                line1: billingDetails.address,
-                city: billingDetails.city,
-                postal_code: billingDetails.postalCode,
-                country: billingDetails.country,
-              },
-            },
-          },
-        });
-
-        if (error) {
-          setError(`Payment failed: ${error.message}`);
-          console.error('Setup failed:', error);
-          return;
-        }
-
-        response = await axios.post('http://localhost:3000/auth/update-status', {
-          userId: decodedToken.userId,
-          paymentIntentId: setupIntent.id,
-          status: 'pending',
-          billingDetails,
-        });
-      } else {
-        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: elements.getElement(CardElement),
-            billing_details: {
-              name: billingDetails.fullname,
-              email: billingDetails.email,
-              address: {
-                line1: billingDetails.address,
-                city: billingDetails.city,
-                postal_code: billingDetails.postalCode,
-                country: billingDetails.country,
-              },
-            },
-          },
-        });
-
-        if (error) {
-          setError(`Payment failed: ${error.message}`);
-          console.error('Payment failed:', error);
-          return;
-        }
-
-        response = await axios.post('http://localhost:3000/auth/update-status', {
-          userId: decodedToken.userId,
-          paymentIntentId: paymentIntent.id,
-          status: 'paid',
-          billingDetails,
-        });
+      if (paymentIntentResponse.status === 200) {
+        setClientSecret(paymentIntentResponse.data.clientSecret);
       }
+
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(paymentIntentResponse.data.clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardNumberElement),
+          billing_details: {
+            name: billingDetails.fullname,
+            email: billingDetails.email,
+            address: {
+              line1: billingDetails.address,
+              city: billingDetails.city,
+              postal_code: billingDetails.postalCode,
+              country: billingDetails.country,
+            },
+          },
+        },
+      });
+
+      if (stripeError) {
+        setError('Payment failed: ' + stripeError.message);
+        console.error('Payment failed:', stripeError);
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.post('http://localhost:3000/auth/update-status', {
+        Id,
+        paymentIntentId: paymentIntent.id,
+        status: 'paid',
+        billingDetails,
+      });
 
       if (response.status === 200) {
-        if (plan === 'free-trial') {
-          alert('Free trial subscription succeeded!');
-        } else {
-          alert('Payment succeeded!');
-        }
+        alert('Payment succeeded!');
         closeModal();
         window.location.href = '/dashboard';
-      } 
-    }catch (updateError) {
-    if (updateError.response) {
-      if (updateError.response.status === 400) {
-        setError('Missing required fields in request body');
-      } else if (updateError.response.status === 401) {
-        setError('Missing payment intent ID or user already has an active subscription');
-      } else if (updateError.response.status === 402) {
-        setError('Payment intent not succeeded or not found');
-      } else if (updateError.response.status === 405) {
-        setError('User not found');
-      } else if (updateError.response.status === 500) {
-        setError('Internal server error while updating status');
-      } else {
-        setError('Error handling payment: ' + (updateError.response.data.message || updateError.message));
       }
-    } else {
-      setError('Network or server error');
+    } catch (updateError) {
+      if (updateError.response) {
+        if (updateError.response.status === 400) {
+          setError('Missing required fields in request body');
+        } else if (updateError.response.status === 401) {
+          setError('Missing payment intent ID or user already has an active subscription');
+        } else if (updateError.response.status === 402) {
+          setError('Payment intent not succeeded or not found');
+        } else if (updateError.response.status === 405) {
+          setError('User not found');
+        } else if (updateError.response.status === 500) {
+          setError('Internal server error while updating status');
+        } else {
+          setError('Error handling payment: ' + (updateError.response.data.message || updateError.message));
+        }
+      } else {
+        setError('Network or server error');
+      }
+      console.error('Error handling payment:', updateError);
+    } finally {
+      setLoading(false);
     }
-    console.error('Error handling payment:', updateError);
-  }
-  }
-   
+  };
+
   return (
     <div className="container">
       <h2 className="mb-4">Checkout</h2>
       <form onSubmit={handleSubmit}>
-      {error && (
-  <div className="alert alert-danger" role="alert">
-    {error}
-  </div>
-)}
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="fullname">Full Name:</label>
           <input
@@ -301,22 +235,31 @@ const CheckoutForm = ({ plan, closeModal }) => {
           </select>
         </div>
         <div className="form-group mt-4">
-          <CardElement />
+          <label htmlFor="cardNumber">Card Number:</label>
+          <CardNumberElement id="cardNumber" className="form-control StripeElement" />
+        </div>
+        <div className="form-group mt-4">
+          <label htmlFor="cardExpiry">Card Expiry:</label>
+          <CardExpiryElement id="cardExpiry" className="form-control StripeElement" />
+        </div>
+        <div className="form-group mt-4">
+          <label htmlFor="cardCvc">Card CVC:</label>
+          <CardCvcElement id="cardCvc" className="form-control StripeElement" />
         </div>
         <div className="mt-3">
-          <p>Price: {price / 100} ZAR</p>
-          <button type="submit" className="btn btn-primary" disabled={!stripe}>
-            Pay
+        <p>Price: {price === 0 ? "Free" : `R${price / 100} ZAR`}</p>
+        <button type="submit" className="btn btn-primary" disabled={!stripe || loading}>
+            {loading ? 'Processing...' : 'Pay'}
           </button>
         </div>
       </form>
-   </div>
-
-          );
-        };
+    </div>
+  );
+};
 
 CheckoutForm.propTypes = {
   plan: PropTypes.string.isRequired,
+   userId: PropTypes.string.isRequired,
   closeModal: PropTypes.func.isRequired,
 };
 

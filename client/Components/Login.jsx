@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import jwt_decode from 'jwt-decode';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './header';
-import Footer from  './footer';
+import Footer from './footer';
+import { Link } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -23,8 +25,15 @@ function Login() {
     axios.post("http://localhost:3000/auth/login", { email, password })
       .then(response => {
         if (response.data.status) {
-          sessionStorage.setItem('authToken', response.data.token);
+          const token = response.data.token;
+          sessionStorage.setItem('authToken', token);  // Store token
 
+          // Decode the token to get the userId
+          const decodedToken = jwt_decode(token);  // Decode the token
+          const userId = decodedToken.userId;  // Access userId from decoded token
+          sessionStorage.setItem('userId', userId);  // Store userId in session storage
+
+          // Redirect based on the selected package
           const redirectPath = sessionStorage.getItem('redirectPath') || '/dashboard';
           sessionStorage.removeItem('redirectPath');
           navigate(redirectPath);
@@ -34,7 +43,6 @@ function Login() {
       })
       .catch(error => {
         if (error.response) {
-
           const status = error.response.status;
           if (status === 400) {
             setError('Login failed: User not registered.');
@@ -46,10 +54,8 @@ function Login() {
             setError('Login failed. Please try again.');
           }
         } else if (error.request) {
-
           setError('Login failed. No response from server.');
         } else {
-
           setError('Login failed. Please try again.');
         }
       });

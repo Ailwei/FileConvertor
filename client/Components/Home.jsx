@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import '../src/assets/app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,13 +9,11 @@ import Header from './header';
 const Home = ({ setSelectedPackage, isLoggedIn }) => {
   const navigate = useNavigate();
 
-  const handlePackageSelection = (pkg) => {
-    setSelectedPackage(pkg);
-    sessionStorage.setItem('selectedPackage', pkg);
+  const handleGetStarted = () => {
     if (isLoggedIn) {
-      navigate(`/dashboard?plan=${pkg}`);
+      navigate('/dashboard');
     } else {
-      sessionStorage.setItem('redirectPath', `/dashboard?plan=${pkg}`);
+      sessionStorage.setItem('redirectPath', '/dashboard');
       navigate('/login');
     }
   };
@@ -39,7 +37,6 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
                   <p className="card-text">Convert video/Audio(mp4, mp3)</p>
                   <p>Charged after trial period</p>
                   <p className="card-text"><strong>Free</strong></p>
-                  <button className="btn btn-primary" onClick={() => handlePackageSelection('basic')}>Get Started</button>
                 </div>
               </div>
             </div>
@@ -53,7 +50,6 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
                   <p className="card-text">Convert video/Audio(mp4, mp3)</p>
                   <p className="card-text">Email support</p>
                   <p className="card-text"><strong>R500/month</strong></p>
-                  <button className="btn btn-primary" onClick={() => handlePackageSelection('premium')}>Get Started</button>
                 </div>
               </div>
             </div>
@@ -67,11 +63,11 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
                   <p className="card-text">Convert video/Audio(mp4, mp3)</p>
                   <p className="card-text">Priority support</p>
                   <p className="card-text"><strong>R1500/month</strong></p>
-                  <button className="btn btn-primary" onClick={() => handlePackageSelection('LifeTime')}>Get Started</button>
                 </div>
               </div>
             </div>
           </div>
+          <button className="btn btn-primary mt-4" onClick={handleGetStarted}>Get Started</button>
         </div>
       </section>
 
