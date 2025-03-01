@@ -13,18 +13,18 @@ import CheckoutForm from '../Components/CheckOut';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// Load Stripe publishable key from environment variables using import.meta.env
+const stripePromise = loadStripe("pk_test_51Pb0jPRv2iwRaKJ6HZNgAmE4GfJiqHvrv7wy8TL6O2Sc10a1wytwy83qwJx1Nn41agQtbvyN7WeVSJb68z8LiaE100DoaHZbR4");
 
 function App() {
   const [selectedPackage, setSelectedPackage] = useState('');
-  const [userId, setUserId] = useState('')
+  const [userId, setUserId] = useState('');
 
-    useEffect(() => {
+  useEffect(() => {
     const storedUserId = sessionStorage.getItem('userId');
-   if(storedUserId){
-    setUserId(storedUserId);
-   }
-    
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
   }, []);
 
   const closeModal = () => {

@@ -6,7 +6,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { getCookie } from '../Utils/cookieUtils';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Subscription = ({ plan, closeModal }) => {
   const [userId, setUserId] = useState(null);

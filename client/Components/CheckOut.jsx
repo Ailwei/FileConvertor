@@ -11,14 +11,13 @@ const countries = [
   { code: 'ZA', name: 'South Africa' },
 ];
 
-const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
+const CheckoutForm = ({ plan, userId, closeModal }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
   const [price, setPrice] = useState(plan?.price || 0);
-  const Id = sessionStorage.getItem('userId');
   const [billingDetails, setBillingDetails] = useState({
     fullname: '',
     email: '',
@@ -27,8 +26,9 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
     postalCode: '',
     country: '',
   });
-  console.log("userId", Id)
-  console.log("fhfhhg", price)
+
+  console.log("userId", userId);
+  console.log("price", price);
 
   useEffect(() => {
     if (plan?.price) {
@@ -38,16 +38,15 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      console.log('userId received in CheckoutForm:', Id);
+      console.log('userId received in CheckoutForm:', userId);
 
       try {
-        const response = await axios.get(`http://localhost:3000/auth/user/${Id}`);
+        const response = await axios.get(`http://localhost:3000/auth/user/${userId}`);
         const { firstname, lastname, email } = response.data;
         setBillingDetails((prevDetails) => ({
           ...prevDetails,
           fullname: `${firstname} ${lastname}`,
           email,
-          
         }));
       } catch (error) {
         setError('Error fetching user details: ' + (error.response?.data?.message || error.message));
@@ -69,8 +68,8 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!stripe || !elements|| !clientSecret) {
-      console.log("stripe", stripe)
+    if (!stripe || !elements) {
+      console.log("stripe", stripe);
       setError('Stripe or Elements not loaded');
       return;
     }
@@ -80,9 +79,9 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
     try {
       const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
         plan: plan.planType,
-        Id,
+        userId,
       });
-      console.log("selected plan", plan.planType, plan.price, price)
+      console.log("selected plan", plan.planType, plan.price, price);
 
       if (paymentIntentResponse.status === 200) {
         setClientSecret(paymentIntentResponse.data.clientSecret);
@@ -112,7 +111,7 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
       }
 
       const response = await axios.post('http://localhost:3000/auth/update-status', {
-        Id,
+        userId,
         paymentIntentId: paymentIntent.id,
         status: 'paid',
         billingDetails,
@@ -247,8 +246,8 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
           <CardCvcElement id="cardCvc" className="form-control StripeElement" />
         </div>
         <div className="mt-3">
-        <p>Price: {price === 0 ? "Free" : `R${price / 100} ZAR`}</p>
-        <button type="submit" className="btn btn-primary" disabled={!stripe || loading}>
+          <p>Price: {price === 0 ? "Free" : `R${price / 100} ZAR`}</p>
+          <button type="submit" className="btn btn-primary" disabled={!stripe || loading}>
             {loading ? 'Processing...' : 'Pay'}
           </button>
         </div>
@@ -259,7 +258,7 @@ const CheckoutForm = ({ plan, userId={userId}, closeModal={closeModal} }) => {
 
 CheckoutForm.propTypes = {
   plan: PropTypes.string.isRequired,
-   userId: PropTypes.string.isRequired,
+  userId: PropTypes.string.isRequired,
   closeModal: PropTypes.func.isRequired,
 };
 

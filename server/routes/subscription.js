@@ -5,7 +5,8 @@ const Subscription = require('../models/Subscription');
 const { verifyUser } = require('./user');
 require('dotenv').config();
 const { sendConfirmationEmail } = require('../middleware/subscriptionConfirmation');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')('sk_test_51Pb0jPRv2iwRaKJ624456z9D64k20kk5CU4vjJYlLsmvH3MTU07aoVExT3PVzBAykGunKEpHQmUT6FrF3swtO84M00Keov7qPw');
 const axios = require('axios')
 const {UserRouter} = require('./user')
 const BillingDetails = require('../models/BillingDetails')
