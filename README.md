@@ -47,8 +47,7 @@ This is a File Conversion Service application built using the MERN stack (MongoD
 git clone https://github.com/your-repo/file-conversion-service.git
 
 cd file-conversion-service
-cd backend
-npm install
+
 
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/yourdbname
@@ -56,9 +55,11 @@ JWT_SECRET=your_jwt_secret
 REDIS_PORT=6379
 
 cd backend
+npm install
 npm start
 
 cd frontend
+npm install
 npm start
 
 
