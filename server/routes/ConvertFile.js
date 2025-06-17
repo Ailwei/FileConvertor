@@ -130,20 +130,24 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
     }
 
     const inputPath = path.join(__dirname, '../uploads', filename);
+    const inputBuffer = fs.readFileSync(inputPath);
 
-    if (mimetype.startsWith('application/pdf') && format === 'docx') {
-      convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.docx`;
-      convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
 
-      await new Promise((resolve, reject) => {
-        libreofficeConvert.convert(inputPath, format, undefined, (err, done) => {
-          if (err) {
-            return reject(err);
-          }
-          fs.writeFileSync(convertedFilePath, done);
-          resolve();
-        });
-      });
+    if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
+  convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.pdf`;
+  convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
+
+  await new Promise((resolve, reject) => {
+    libreofficeConvert.convert(inputBuffer, '.pdf', undefined, (err, done) => {
+      if (err) {
+        console.error('LibreOffice conversion error:', err);
+        return reject(err);
+      }
+      fs.writeFileSync(convertedFilePath, done);
+      resolve();
+    });
+  });
+
     } else if (mimetype.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml.document') && format === 'pdf') {
       convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.pdf`;
       convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
@@ -346,34 +350,45 @@ router.get('/files', verifyUser, async (req, res) => {
 
   }
 });
-router.get('/download/:filename', (req, res) => {
-  console.log('Received request for file:', req.params.filename);
-  const filename = req.params.filename;
 
-  gfsBucket.find({ filename }).toArray((err, files) => {
-    if (err) {
-      console.error('Error finding file:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
+router.get('/download/:filename', verifyUser, async (req, res) => {
+  const { filename } = req.params;
+  console.log('➡️ Download request for:', filename);
 
-    if (!files.length) {
+  try {
+    const [file] = await gfsBucket.find({ filename }).limit(1).toArray();
+
+    if (!file) {
+      console.warn('❌ File not found in GridFS:', filename);
       return res.status(404).json({ message: 'File not found' });
     }
 
-    const file = files[0];
-    const readStream = gfsBucket.openDownloadStreamByName(filename);
+    console.log('✅ File found:', file._id);
 
-    res.setHeader('Content-Type', file.contentType);
+    res.setHeader('Content-Type', file.contentType || 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
 
-    readStream.on('error', (err) => {
-      console.error('Error streaming file:', err);
-      res.status(500).json({ error: 'Error streaming file' });
+    const stream = gfsBucket.openDownloadStream(file._id);
+
+    stream.on('error', (err) => {
+      console.error('❗ Stream error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Stream error' });
+      }
     });
 
-    readStream.pipe(res);
-  });
+    stream.on('end', () => {
+      console.log('✅ Stream finished for:', filename);
+    });
+
+    stream.pipe(res);
+
+  } catch (err) {
+    console.error('🔥 Unexpected error in /download:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
+
 router.put('/updatefiles/:filename', verifyUser, async (req, res) => {
   const oldFilename = req.params.filename;
   const { newFilename } = req.body;
