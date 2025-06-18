@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css'; 
-import '../src/assets/FileConversion.css';
+
 
 const FileConvert = ({ onClose }) => {
   const [file, setFile] = useState(null);

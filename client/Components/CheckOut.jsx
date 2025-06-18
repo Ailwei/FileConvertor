@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from '@stripe/react-stripe-js';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import '../src/assets/Checkout.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../src/assets/stripe.css';
 
 const countries = [
   { code: 'US', name: 'United States' },
@@ -16,7 +17,6 @@ const CheckoutForm = ({ plan, userId, closeModal }) => {
   const elements = useElements();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
   const [price, setPrice] = useState(plan?.price || 0);
   const [billingDetails, setBillingDetails] = useState({
     fullname: '',
@@ -27,30 +27,22 @@ const CheckoutForm = ({ plan, userId, closeModal }) => {
     country: '',
   });
 
-  console.log("userId", userId);
-  console.log("price", price);
-
   useEffect(() => {
-    if (plan?.price) {
-      setPrice(plan.price);
-    }
+    if (plan?.price) setPrice(plan.price);
   }, [plan]);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      console.log('userId received in CheckoutForm:', userId);
-
       try {
         const response = await axios.get(`http://localhost:3000/auth/user/${userId}`);
         const { firstname, lastname, email } = response.data;
-        setBillingDetails((prevDetails) => ({
-          ...prevDetails,
+        setBillingDetails(prev => ({
+          ...prev,
           fullname: `${firstname} ${lastname}`,
           email,
         }));
-      } catch (error) {
-        setError('Error fetching user details: ' + (error.response?.data?.message || error.message));
-        console.error('Error fetching user details:', error);
+      } catch (err) {
+        setError('Error fetching user details: ' + (err.response?.data?.message || err.message));
       }
     };
 
@@ -59,17 +51,13 @@ const CheckoutForm = ({ plan, userId, closeModal }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setBillingDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
-    }));
+    setBillingDetails(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
-      console.log("stripe", stripe);
       setError('Stripe or Elements not loaded');
       return;
     }
@@ -77,17 +65,12 @@ const CheckoutForm = ({ plan, userId, closeModal }) => {
     setLoading(true);
 
     try {
-      const paymentIntentResponse = await axios.post('http://localhost:3000/auth/create-payment-intent', {
+      const { data } = await axios.post('http://localhost:3000/auth/create-payment-intent', {
         plan: plan.planType,
         userId,
       });
-      console.log("selected plan", plan.planType, plan.price, price);
 
-      if (paymentIntentResponse.status === 200) {
-        setClientSecret(paymentIntentResponse.data.clientSecret);
-      }
-
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(paymentIntentResponse.data.clientSecret, {
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardNumberElement),
           billing_details: {
@@ -105,7 +88,6 @@ const CheckoutForm = ({ plan, userId, closeModal }) => {
 
       if (stripeError) {
         setError('Payment failed: ' + stripeError.message);
-        console.error('Payment failed:', stripeError);
         setLoading(false);
         return;
       }
@@ -122,142 +104,122 @@ const CheckoutForm = ({ plan, userId, closeModal }) => {
         closeModal();
         window.location.href = '/dashboard';
       }
-    } catch (updateError) {
-      if (updateError.response) {
-        if (updateError.response.status === 400) {
-          setError('Missing required fields in request body');
-        } else if (updateError.response.status === 401) {
-          setError('Missing payment intent ID or user already has an active subscription');
-        } else if (updateError.response.status === 402) {
-          setError('Payment intent not succeeded or not found');
-        } else if (updateError.response.status === 405) {
-          setError('User not found');
-        } else if (updateError.response.status === 500) {
-          setError('Internal server error while updating status');
-        } else {
-          setError('Error handling payment: ' + (updateError.response.data.message || updateError.message));
-        }
-      } else {
-        setError('Network or server error');
-      }
-      console.error('Error handling payment:', updateError);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      setError('Payment failed: ' + msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <h2 className="mb-4">Checkout</h2>
-      <form onSubmit={handleSubmit}>
-        {error && (
-          <div className="alert alert-danger" role="alert">
-            {error}
+    <div className="container min-vh-100 d-flex justify-content-center align-items-center">
+      <div className="card shadow p-4 w-100" style={{ maxWidth: '600px' }}>
+        <h2 className="mb-4 text-center">Checkout</h2>
+        {error && <div className="alert alert-danger">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label htmlFor="fullname" className="form-label">Full Name</label>
+            <input
+              type="text"
+              name="fullname"
+              id="fullname"
+              className="form-control"
+              value={billingDetails.fullname}
+              onChange={handleInputChange}
+              required
+            />
           </div>
-        )}
-        <div className="form-group">
-          <label htmlFor="fullname">Full Name:</label>
-          <input
-            type="text"
-            id="fullname"
-            name="fullname"
-            className="form-control"
-            value={billingDetails.fullname}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            className="form-control"
-            value={billingDetails.email}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="address">Address:</label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            className="form-control"
-            value={billingDetails.address}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="city">City:</label>
-          <input
-            type="text"
-            id="city"
-            name="city"
-            className="form-control"
-            value={billingDetails.city}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="postalCode">Postal Code:</label>
-          <input
-            type="text"
-            id="postalCode"
-            name="postalCode"
-            className="form-control"
-            value={billingDetails.postalCode}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="country">Country:</label>
-          <select
-            id="country"
-            name="country"
-            className="form-control"
-            value={billingDetails.country}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Select Country</option>
-            {countries.map((country) => (
-              <option key={country.code} value={country.code}>
-                {country.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group mt-4">
-          <label htmlFor="cardNumber">Card Number:</label>
-          <CardNumberElement id="cardNumber" className="form-control StripeElement" />
-        </div>
-        <div className="form-group mt-4">
-          <label htmlFor="cardExpiry">Card Expiry:</label>
-          <CardExpiryElement id="cardExpiry" className="form-control StripeElement" />
-        </div>
-        <div className="form-group mt-4">
-          <label htmlFor="cardCvc">Card CVC:</label>
-          <CardCvcElement id="cardCvc" className="form-control StripeElement" />
-        </div>
-        <div className="mt-3">
-          <p>Price: {price === 0 ? "Free" : `R${price / 100} ZAR`}</p>
-          <button type="submit" className="btn btn-primary" disabled={!stripe || loading}>
-            {loading ? 'Processing...' : 'Pay'}
-          </button>
-        </div>
-      </form>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              className="form-control"
+              value={billingDetails.email}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="address" className="form-label">Address</label>
+            <input
+              type="text"
+              name="address"
+              id="address"
+              className="form-control"
+              value={billingDetails.address}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="city" className="form-label">City</label>
+            <input
+              type="text"
+              name="city"
+              id="city"
+              className="form-control"
+              value={billingDetails.city}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="postalCode" className="form-label">Postal Code</label>
+            <input
+              type="text"
+              name="postalCode"
+              id="postalCode"
+              className="form-control"
+              value={billingDetails.postalCode}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="country" className="form-label">Country</label>
+            <select
+              name="country"
+              id="country"
+              className="form-control"
+              value={billingDetails.country}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select Country</option>
+              {countries.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-3">
+            <label htmlFor="cardNumber" className="form-label">Card Number</label>
+            <CardNumberElement id="cardNumber" className="form-control StripeElement" />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="cardExpiry" className="form-label">Card Expiry</label>
+            <CardExpiryElement id="cardExpiry" className="form-control StripeElement" />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="cardCvc" className="form-label">Card CVC</label>
+            <CardCvcElement id="cardCvc" className="form-control StripeElement" />
+          </div>
+          <div className="d-flex justify-content-between align-items-center mt-4">
+            <p className="m-0">Price: {price === 0 ? "Free" : `R${price / 100} ZAR`}</p>
+            <button type="submit" className="btn btn-primary" disabled={!stripe || loading}>
+              {loading ? 'Processing...' : 'Pay'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
 
 CheckoutForm.propTypes = {
-  plan: PropTypes.string.isRequired,
+  plan: PropTypes.object.isRequired,
   userId: PropTypes.string.isRequired,
   closeModal: PropTypes.func.isRequired,
 };

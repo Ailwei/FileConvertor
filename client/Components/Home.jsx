@@ -1,12 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import '../src/assets/app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AboutUs from './aboutUs';
 import Footer from './footer';
 import Header from './header';
 
-const Home = ({ setSelectedPackage, isLoggedIn }) => {
+const Home = ({ isLoggedIn }) => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
@@ -22,54 +21,64 @@ const Home = ({ setSelectedPackage, isLoggedIn }) => {
     <div className="landing-page">
       <Header/>
 
-      <section className="hero py-5 text-center">
-        <div className="container">
-          <h1>Convert Files Effortlessly</h1>
-          <p>Choose the plan that fits your needs.</p>
-          <div className="row pricing">
-            <div className="col-md-4 plan">
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">Basic Plan</h2>
-                  <p className="card-text">Convert up to 10 files</p>
-                  <p className="card-text">Convert documents(pdf, docx)</p>
-                  <p className="card-text">Convert images(png,jpeg)</p>
-                  <p className="card-text">Convert video/Audio(mp4, mp3)</p>
-                  <p>Charged after trial period</p>
-                  <p className="card-text"><strong>Free</strong></p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 plan">
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">Premium</h2>
-                  <p className="card-text">Convert up to 100 files/month</p>
-                  <p className="card-text">Convert documents(pdf, docx)</p>
-                  <p className="card-text">Convert images(png,jpeg)</p>
-                  <p className="card-text">Convert video/Audio(mp4, mp3)</p>
-                  <p className="card-text">Email support</p>
-                  <p className="card-text"><strong>R500/month</strong></p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 plan">
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">Life Time</h2>
-                  <p className="card-text">Unlimited file conversions</p>
-                  <p className="card-text">Convert documents(pdf, docx)</p>
-                  <p className="card-text">Convert images(png,jpeg)</p>
-                  <p className="card-text">Convert video/Audio(mp4, mp3)</p>
-                  <p className="card-text">Priority support</p>
-                  <p className="card-text"><strong>R1500/month</strong></p>
-                </div>
-              </div>
+  <section className="py-5 text-center bg-primary text-white">
+  <div className="container">
+    <h1 className="display-5 fw-bold">Convert Files Effortlessly</h1>
+    <p className="lead text-white">Choose the plan that fits your needs.</p>
+    <div className="row mt-4 g-4 text-start">
+      {[
+        {
+          title: "Basic Plan",
+          details: [
+            "Convert up to 10 files",
+            "Convert documents (pdf, docx)",
+            "Convert images (png, jpeg)",
+            "Convert video/Audio (mp4, mp3)",
+            "Charged after trial period",
+          ],
+          price: "Free",
+        },
+        {
+          title: "Premium",
+          details: [
+            "Convert up to 100 files/month",
+            "Convert documents (pdf, docx)",
+            "Convert images (png, jpeg)",
+            "Convert video/Audio (mp4, mp3)",
+            "Email support",
+          ],
+          price: "R500/month",
+        },
+        {
+          title: "Life Time",
+          details: [
+            "Unlimited file conversions",
+            "Convert documents (pdf, docx)",
+            "Convert images (png, jpeg)",
+            "Convert video/Audio (mp4, mp3)",
+            "Priority support",
+          ],
+          price: "R1500/month",
+        },
+      ].map((plan, i) => (
+        <div className="col-md-4" key={i}>
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <h5 className="card-title">{plan.title}</h5>
+              {plan.details.map((d, j) => (
+                <p className="card-text mb-2" key={j}>{d}</p>
+              ))}
+              <p className="fw-bold mt-3">{plan.price}</p>
             </div>
           </div>
-          <button className="btn btn-primary mt-4" onClick={handleGetStarted}>Get Started</button>
         </div>
-      </section>
+      ))}
+    </div>
+    <button className="btn btn-primary mt-5" onClick={handleGetStarted}>
+      Get Started
+    </button>
+  </div>
+</section>
 
       <section className="about py-5" bgcolor="blue">
         <AboutUs/>

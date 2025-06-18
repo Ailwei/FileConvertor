@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../src/assets/Header.css';
+import { Navbar, Nav, Container, Button, Dropdown } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Header = ({ setShowFileConvert, setShowUpdateProfile }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,45 +21,93 @@ const Header = ({ setShowFileConvert, setShowUpdateProfile }) => {
   };
 
   return (
-    <header className="header bg-light py-3 shadow-sm">
-      <div className="container">
-        <nav className="navbar navbar-expand-lg navbar-light">
-          <Link className="navbar-brand" to="/">
-            <img src="/src/images/File.png" alt="File Conversion Service" className="logo" />
-            File Conversion Service
-          </Link>
-          <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ml-auto">
+    <Navbar bg="light" expand="lg"  className="shadow-sm" sticky="top">
+      <Container fluid className="bm-8">
+       <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
+  <img
+    src="/src/images/File.png"
+    alt="File Conversion Service"
+    width="40"
+    height="40"
+    className="me-2"
+  />
+  <span className="d-none d-lg-inline">File Conversion Service</span>
+</Navbar.Brand>
+
+        <div className="d-lg-none">
+          <Dropdown show={showDropdown} onToggle={setShowDropdown}>
+            <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">
+              Menu
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu align="end">
               {isLoggedIn ? (
                 <>
-                  <li className="nav-item">
-                    <button className="btn btn-primary me-2" onClick={() => setShowFileConvert(true)}>Convert Files</button>
-                  </li>
-                  <li className="nav-item">
-                    <button className="btn btn-secondary me-2" onClick={() => setShowUpdateProfile(true)}>Update Profile</button>
-                  </li>
-                  <li className="nav-item">
-                    <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-                  </li>
+                  <Dropdown.Item onClick={() => { setShowFileConvert(true); setShowDropdown(false); }}>
+                    Convert Files
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => { setShowUpdateProfile(true); setShowDropdown(false); }}>
+                    Update Profile
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item onClick={() => { handleLogout(); setShowDropdown(false); }}>
+                    Logout
+                  </Dropdown.Item>
                 </>
               ) : (
                 <>
-                  <li className="nav-item">
-                    <Link to="/login" className="nav-link">Login</Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link to="/signup" className="nav-link">Register</Link>
-                  </li>
+                  <Dropdown.Item as={Link} to="/login" onClick={() => setShowDropdown(false)}>
+                    Login
+                  </Dropdown.Item>
+                  <Dropdown.Item as={Link} to="/signup" onClick={() => setShowDropdown(false)}>
+                    Register
+                  </Dropdown.Item>
                 </>
               )}
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
+
+        {/* Show regular nav only on large screens */}
+        <Navbar.Collapse id="basic-navbar-nav" className="d-none d-lg-flex justify-content-end">
+          <Nav className="d-flex align-items-center">
+            {isLoggedIn ? (
+              <>
+                <Button
+                  variant="primary"
+                 size="sm"
+                 className="me-2 px-4 py-2"
+                  onClick={() => setShowFileConvert(true)}
+                >
+                  Convert Files
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                 className="me-2 px-4 py-2"
+                  onClick={() => setShowUpdateProfile(true)}
+                >
+                  Update Profile
+                </Button>
+                <Button variant="danger" size='sm' className="me-2 px-4 py-2" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Nav.Link  as={Link} to="/login">
+
+                  Login
+                </Nav.Link>
+                <Nav.Link as={Link} to="/signup">
+                  Register
+                </Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 };
 

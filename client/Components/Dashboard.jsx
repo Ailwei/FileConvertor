@@ -6,12 +6,11 @@ import UpdateProfile from '../Components/UpdateProfile';
 import ConvertedFiles from '../Components/ConvertedFiles';
 import Subscription from '../Components/Subscription';
 import SubscriptionDetails from '../Components/SubscriptionDetails';
-import '../src/assets/Dashboard.css';
 import PropTypes from 'prop-types';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Plans from '../Components/Plans';
 import Header from '../Components/header';
-import Footer from '../Components/footer'; 
+import Footer from '../Components/footer';
 
 axios.defaults.withCredentials = true;
 
@@ -72,37 +71,52 @@ const Dashboard = ({ selectedPackage }) => {
   };
 
   return (
-    <div className="dashboard container">
-      <Header setShowFileConvert={setShowFileConvert} setShowUpdateProfile={setShowUpdateProfile} /> {/* Pass the functions to Header */}
-      
-      {showFileConvert && <FileConvert onClose={() => setShowFileConvert(false)} />}
-      {showUpdateProfile && <UpdateProfile onClose={() => setShowUpdateProfile(false)} />}
-      {showSubscriptionModal && (
-        <Subscription plan={selectedPackage} closeModal={closeModal} />
-      )}
-      <section>
-        <Plans />
-      </section>
+    <div className="bg-light min-vh-100 d-flex flex-column">
+      <Header setShowFileConvert={setShowFileConvert} setShowUpdateProfile={setShowUpdateProfile} />
 
-      <section className="my-5">
-        <div className="row">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <ConvertedFiles />
+      <main className="container my-4 flex-grow-1">
+        {showFileConvert && (
+          <div className="mb-4">
+            <FileConvert onClose={() => setShowFileConvert(false)} />
+          </div>
+        )}
+
+        {showUpdateProfile && (
+          <div className="mb-4">
+            <UpdateProfile onClose={() => setShowUpdateProfile(false)} />
+          </div>
+        )}
+
+        {showSubscriptionModal && (
+          <Subscription plan={selectedPackage} closeModal={closeModal} />
+        )}
+
+        <section className="mb-5">
+          <Plans />
+        </section>
+<div className="col-md-12 mb-4">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title">Subscription Details</h5>
+                  <SubscriptionDetails />
+                </div>
+              </div>
+            </div>
+        <section className="mb-5">
+          <div className="row">
+            <div className="col-md-12 mb-4">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title">Converted Files</h5>
+                  <ConvertedFiles />
+                </div>
               </div>
             </div>
           </div>
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <SubscriptionDetails />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <Footer /> 
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 };

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-//import '../src/assets/ForgotPassword.css';
 
 function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -53,7 +52,7 @@ function ForgotPassword() {
                     </div>
                     <button type="submit" className="btn btn-primary w-100">Send</button>
                     <p className="mt-3 text-center">
-                        Remembered your password? <Link to="/login" className="btn btn-link">Login</Link>
+                        Remembered your password? <Link to="/login" className="text-decoration-none fw-semibold">Login</Link>
                     </p>
                 </form>
             </div>

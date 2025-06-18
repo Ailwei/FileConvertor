@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-//import '../src/assets/ResetPassword.css';
+
 
 function ResetPassword() {
     const { token } = useParams();
@@ -54,7 +54,7 @@ function ResetPassword() {
                     </div>
                     <button type="submit" className="btn btn-primary w-100">Reset Password</button>
                     <p className="mt-3 text-center">
-                        Remembered your password? <Link to="/login" className="btn btn-link">Login</Link>
+                        Remembered your password? <Link to="/login" className="text-decoration-none fw-semibold">Login</Link>
                     </p>
                 </form>
             </div>
