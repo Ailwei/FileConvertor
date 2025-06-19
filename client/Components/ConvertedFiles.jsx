@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import '../src/assets/convertedFiles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import jwtDecode from 'jwt-decode';
 import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
