@@ -14,7 +14,6 @@ const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
 const { verifyUser } = require('./user');
 const { GridFSBucket } = require('mongodb');
-const imagemagick = require('imagemagick');
 const { exec } = require('child_process');
 const ConversionLog = require('../models/ConversionLog');
 
@@ -269,7 +268,7 @@ router.post('/convert', verifyUser, checkSubscription, upload.single('file'), as
       convertedFileName = `converted_${path.basename(filename, path.extname(filename))}.${format}`;
       convertedFilePath = path.join(__dirname, '../uploads', convertedFileName);
 
-      const command = `magick ${inputPath} ${convertedFilePath}`;
+      const command = `convert ${inputPath} ${convertedFilePath}`;
       console.log('Executing command:', command);
 
       await new Promise((resolve, reject) => {
