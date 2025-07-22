@@ -25,7 +25,7 @@ const Header = ({ setShowFileConvert, setShowUpdateProfile }) => {
       <Container fluid className="bm-8">
        <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
   <img
-    src="/src/images/File.png"
+    src="/images/File.png"
     alt="File Conversion Service"
     width="40"
     height="40"
