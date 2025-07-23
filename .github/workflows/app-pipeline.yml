@@ -26,17 +26,26 @@ jobs:
       - name: Build Docker containers
         run: docker-compose build
 
-      - name: Start containers in background
-        run: docker-compose up -d
+      - name: List Docker images
+        run: docker images
 
-      - name: Wait for services to be ready
-        run: sleep 10
+      - name: Run containers (foreground)
+        run: docker-compose up --abort-on-container-exit
 
-      - name: Check running containers
-        run: docker ps
+      - name: List containers (detailed)
+        run: docker ps -a
+
+      - name: Check container exit codes
+        run: |
+          for container in backend frontend; do
+            echo "$container exit code:"
+            docker inspect -f '{{.State.ExitCode}}' $container || true
+          done
 
       - name: Backend Logs
-        run: docker logs backend
+        if: failure()
+        run: docker logs backend || true
 
       - name: Frontend Logs
-        run: docker logs frontend
+        if: failure()
+        run: docker logs frontend || true
