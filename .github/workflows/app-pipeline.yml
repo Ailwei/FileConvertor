@@ -3,19 +3,21 @@ name: App CI/CD Pipeline
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-and-run:
+  docker:
     runs-on: self-hosted
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: choco Install Docker Compose
+        run: sudo apt-get install docker-compose -y
 
-      - name: Build Docker image
+      - name: Build Docker images
         run: docker compose build
 
       - name: Run Docker containers
@@ -23,3 +25,9 @@ jobs:
 
       - name: List running containers
         run: docker ps
+
+      - name: Show logs for backend container
+        run: docker logs backend || echo "No logs for backend"
+
+      - name: Show logs for frontend container
+        run: docker logs frontend || echo "No logs for frontend"
