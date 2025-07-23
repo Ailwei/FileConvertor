@@ -16,11 +16,16 @@ jobs:
 
       - name: Ensure .env file exists (Windows)
         run: |
-          if (!(Test-Path "server/.env")) {
-            Write-Host "Creating .env file..."
-            Set-Content -Path "server/.env" -Value "DB_HOST=localhost`nDB_PORT=27017`nDB_NAME=fileconvertor"
-          }
-        shell: pwsh
+          if not exist "server\.env" (
+            echo Creating .env file...
+            echo MONGODB_URI="mongodb+srv://ailwei:LKZzr8sWyDQzaSxh@cluster0.m6rnubf.mongodb.net/FCS?retryWrites=true&w=majority" > server\.env
+            echo PORT="5000" >> server\.env
+            echo KEY="JAx34GSxsgfCSGDgdtrkC454HFGHE63485BF" >> server\.env
+            echo STRIPE_SECRET_KEY=sk_test_51Pb0jPRv2iwRaKJ624456z9D64k20kk5CU4vjJYlLsmvH3MTU07aoVExT3PVzBAykGunKEpHQmUT6FrF3swtO84M00Keov7qPw >> server\.env
+            echo VITE_STRIPE_PUBLISHABLE_KEY=pk_test_51Pb0jPRv2iwRaKJ6HZNgAmE4GfJiqHvrv7wy8TL6O2Sc10a1wytwy83qwJx1Nn41agQtbvyN7WeVSJb68z8LiaE100DoaHZbR4 >> server\.env
+            echo USER="ailweimaemu@gmail.com" >> server\.env
+            echo PASSWORD_APP="xetcykprfnnvgogt" >> server\.env
+          )
 
       - name: Build and Run Docker containers
         run: |
