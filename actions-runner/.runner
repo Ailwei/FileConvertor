@@ -1,0 +1,11 @@
+﻿{
+  "agentId": 21,
+  "agentName": "AILWEI",
+  "poolId": 1,
+  "poolName": "Default",
+  "serverUrl": "https://pipelinesghubeus4.actions.githubusercontent.com/ZaPeSJxnoGWBAPyiu4gCJFTlz4chPoCh3RaQujlWFcUyIUv8ol/",
+  "gitHubUrl": "https://github.com/Ailwei/FileConvertor",
+  "workFolder": "_work",
+  "useV2Flow": true,
+  "serverUrlV2": "https://broker.actions.githubusercontent.com/"
+}

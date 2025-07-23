@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "Ailwei/FileConvertor",
+  "pipelineDirectory": "FileConvertor",
+  "workspaceDirectory": "FileConvertor\\FileConvertor",
+  "repositories": {
+    "Ailwei/FileConvertor": {
+      "repositoryPath": "FileConvertor\\FileConvertor",
+      "lastRunOn": "07/23/2025 14:48:31 +02:00"
+    }
+  },
+  "lastRunOn": "07/23/2025 15:02:48 +02:00"
+}
