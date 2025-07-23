@@ -1,4 +1,4 @@
-name: App CI/CD Pipeline
+name: Minimal App CI/CD Pipeline
 
 on:
   push:
@@ -14,20 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Docker Compose
-        run: sudo apt-get install docker-compose -y
-
-      - name: Build Docker images
-        run: docker compose build
-
-      - name: Run Docker containers
-        run: docker compose up -d
-
-      - name: List running containers
-        run: docker ps
-
-      - name: Show logs for backend container
-        run: docker logs backend || echo "No logs for backend"
-
-      - name: Show logs for frontend container
-        run: docker logs frontend || echo "No logs for frontend"
+      - name: Build and Run Docker containers
+        run: |
+          docker compose build
+          docker compose up -d
