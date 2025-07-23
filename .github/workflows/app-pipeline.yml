@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: choco Install Docker Compose
+      - name: Install Docker Compose
         run: sudo apt-get install docker-compose -y
 
       - name: Build Docker images
