@@ -14,6 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Ensure .env file exists (Windows)
+        run: |
+          if (!(Test-Path "server/.env")) {
+            Write-Host "Creating .env file..."
+            Set-Content -Path "server/.env" -Value "DB_HOST=localhost`nDB_PORT=27017`nDB_NAME=fileconvertor"
+          }
+        shell: pwsh
+
       - name: Build and Run Docker containers
         run: |
           docker compose build
