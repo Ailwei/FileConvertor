@@ -3,12 +3,10 @@ name: App CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  docker:
-    runs-on: ubuntu-latest
+  build-and-run:
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -21,7 +19,7 @@ jobs:
         run: docker compose build
 
       - name: Run Docker containers
-        run: docker compose up -d 
+        run: docker compose up -d
 
       - name: List running containers
-        run: docker ps           
+        run: docker ps
