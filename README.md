@@ -29,6 +29,8 @@ This is a File Conversion Service application built using the MERN stack (MongoD
 - Node.js
 - Axios
 - React Router DOM
+- Selemiun for end to end testing
+-Stripe for payment
 
 
 ## Getting Started
@@ -37,7 +39,6 @@ This is a File Conversion Service application built using the MERN stack (MongoD
 
 - Node.js
 - MongoDB
-- Redis (if applicable)
 
 ### Installation
 
@@ -52,7 +53,6 @@ cd file-conversion-service
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/yourdbname
 JWT_SECRET=your_jwt_secret
-REDIS_PORT=6379
 
 cd backend
 npm install
@@ -61,6 +61,13 @@ npm start
 cd frontend
 npm install
 npm start
+
+# Running Tests
+
+cd client/tests
+npx mocha tests/tests.cjs
+
+
 
 
 
