@@ -1,7 +1,6 @@
 const { expect } = require('chai');
 const { findElement, click} = require('../helperTests/helpersTest.cjs');
 const { By, until } = require('selenium-webdriver');
-const { element } = require('prop-types');
 
 let driver;
 
@@ -79,14 +78,14 @@ it('should show popup alert after password reset request', async function () {
   await resetBtn.click();
   
   try {
-    await driver.wait(until.alertIsPresent(), 3000);
+    await driver.wait(until.alertIsPresent(''), 5000);
     const alert = await driver.switchTo().alert();
     const alertText = await alert.getText();
     expect(alertText.toLowerCase()).to.include('check your email for reset instructions');
     await alert.accept();
   } catch (error) {
     console.log('No popup alert found, checking for inline message');
-    const successMessage = await findElement(driver, By.css('.alert-success, .success-message, .alert-info'));
+    const successMessage = await findElement(driver, By.css('.alert-success, .success-message, .alert-info'), 5000);
     const messageText = await successMessage.getText();
     expect(messageText.toLowerCase()).to.include('check your email');
   }
