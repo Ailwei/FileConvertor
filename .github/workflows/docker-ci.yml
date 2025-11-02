@@ -42,7 +42,7 @@ jobs:
       - name: Run frontend tests
         run: |
          docker run --rm \
-         -v ${{ github.workspace}}/client:app \
+         -v ${{ github.workspace}}/client:/app \
          -w /app \
          fileconvertor-frontend:latest \
          sh -c "npm install selenium-webdriver chromedriver chai mocha && npx mocha tests/tests.cjs"
