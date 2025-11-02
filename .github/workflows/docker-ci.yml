@@ -1,0 +1,63 @@
+name: Docker CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        run: docker build -t fileconvertor-backend:latest ./server
+
+      - name: Build frontend image
+        run: docker build -t fileconvertor-frontend:latest ./client
+
+      - name: Run backend tests
+        run: |
+          docker run --rm \
+            --network host \
+            -e MONGO_URI="mongodb://localhost:27017/testdb" \
+            fileconvertor-backend:latest npm test
+
+      - name: Run frontend tests
+        run: |
+          docker run --rm fileconvertor-frontend:latest npm run test -- --watchAll=false
+
+      - name: Log in to Docker Hub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Push backend image
+        if: github.ref == 'refs/heads/main'
+        run: docker tag fileconvertor-backend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/fileconvertor-backend:latest && docker push ${{ secrets.DOCKER_HUB_USERNAME }}/fileconvertor-backend:latest
+
+      - name: Push frontend image
+        if: github.ref == 'refs/heads/main'
+        run: docker tag fileconvertor-frontend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/fileconvertor-frontend:latest && docker push ${{ secrets.DOCKER_HUB_USERNAME }}/fileconvertor-frontend:latest
