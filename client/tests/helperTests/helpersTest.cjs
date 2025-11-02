@@ -3,10 +3,21 @@ const chrome = require('selenium-webdriver/chrome');
 const chromedriver = require('chromedriver');
 
 async function buildDriver() {
-  return new Builder()
+  const userDataDir = `/tmp/chrome-${Date.now()}`;
+  const options = new chrome.Options()
+    .addArguments('--headless=new')         
+    .addArguments('--no-sandbox')             
+    .addArguments('--disable-dev-shm-usage')
+    .addArguments('--disable-gpu')
+    .addArguments(`--user-data-dir=${userDataDir}`);
+
+  const service = new chrome.ServiceBuilder(chromedriver.path);
+   return new Builder()
     .forBrowser('chrome')
-    .setChromeService(new chrome.ServiceBuilder(chromedriver.path))
+    .setChromeOptions(options)
+    .setChromeService(service)
     .build();
+
 }
 async function findElement(driver, locator){
   const element = await driver.wait(until.elementLocated(locator), 5000);
