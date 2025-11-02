@@ -22,6 +22,10 @@ jobs:
           --health-interval 10s 
           --health-timeout 5s 
           --health-retries 5
+      selenium:
+        image: selenium/standalone-chrome:142.0
+        ports:
+          - 4444:4444
 
     steps:
       - name: Checkout repository
