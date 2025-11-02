@@ -18,9 +18,11 @@ describe('Browse the Landing Page', function () {
     subscriptionTests.setDriver(driver);
   });
 
-  after(async function () {
+ after(async function () {
+  if (driver) {
     await driver.quit();
-  });
+  }
+});
 
   describe('Landing Page Tests', function () {
     browserTests.browserTests();
