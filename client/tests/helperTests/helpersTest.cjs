@@ -2,22 +2,21 @@ const { Builder, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const chromedriver = require('chromedriver');
 
-const { Builder, until } = require('selenium-webdriver');
-const chrome = require('selenium-webdriver/chrome');
-
 async function buildDriver() {
+  const userDataDir = `/tmp/chrome-${Date.now()}`;
+
   const options = new chrome.Options()
     .addArguments('--headless=new')
     .addArguments('--no-sandbox')
     .addArguments('--disable-dev-shm-usage')
-    .addArguments('--disable-gpu');
+    .addArguments('--disable-gpu')
+    .addArguments(`--user-data-dir=${userDataDir}`);
 
   return new Builder()
     .forBrowser('chrome')
     .setChromeOptions(options)
     .build();
 }
-
 async function findElement(driver, locator){
   const element = await driver.wait(until.elementLocated(locator), 5000);
   await driver.wait(until.elementIsVisible(element), 5000);
