@@ -4,18 +4,20 @@ const chromedriver = require('chromedriver');
 
 async function buildDriver() {
   const userDataDir = `/tmp/chrome-${Date.now()}`;
-
   const options = new chrome.Options()
-    .addArguments('--headless=new')
-    .addArguments('--no-sandbox')
+    .addArguments('--headless=new')         
+    .addArguments('--no-sandbox')             
     .addArguments('--disable-dev-shm-usage')
     .addArguments('--disable-gpu')
     .addArguments(`--user-data-dir=${userDataDir}`);
 
-  return new Builder()
+  const service = new chrome.ServiceBuilder(chromedriver.path);
+   return new Builder()
     .forBrowser('chrome')
     .setChromeOptions(options)
+    .setChromeService(service)
     .build();
+
 }
 async function findElement(driver, locator){
   const element = await driver.wait(until.elementLocated(locator), 5000);
