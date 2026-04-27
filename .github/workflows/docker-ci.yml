@@ -23,7 +23,7 @@ jobs:
           --health-timeout 5s 
           --health-retries 5
       selenium:
-        image: selenium/standalone-chrome:142.0
+        image: selenium/standalone-chrome:latest
         ports:
           - 4444:4444
 
@@ -51,8 +51,8 @@ jobs:
          node:22 \
          sh -c "
          apt-get update && apt-get install -y chromium && \
-         npm install selenium-webdriver chromedriver chai mocha && \
-         CHROME_PATH=/usr/bin/chromium npx mocha tests/tests.cjs
+         npm install selenium-webdriver chai mocha && \
+         npx mocha tests/tests.cjs
          "
 
       - name: Log in to Docker Hub
