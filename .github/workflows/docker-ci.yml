@@ -51,7 +51,7 @@ jobs:
          node:22 \
          sh -c "
          apt-get update && apt-get install -y chromium && \
-         npm install selenium-webdriver chromedriver chai mocha && \
+         npm install selenium-webdriver chai mocha && \
          CHROME_PATH=/usr/bin/chromium npx mocha tests/tests.cjs
          "
 
