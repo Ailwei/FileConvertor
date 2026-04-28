@@ -1,9 +1,6 @@
 const { Builder, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
-const { Builder } = require('selenium-webdriver');
-const chrome = require('selenium-webdriver/chrome');
-
 async function buildDriver() {
   const userDataDir = `/tmp/chrome-${Date.now()}`;
 
