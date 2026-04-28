@@ -44,7 +44,7 @@ jobs:
       - name: Run frontend tests
         run: |
           npm install selenium-webdriver chai mocha
-          npx mocha tests/tests.cjs
+          npx mocha client/tests/tests.cjs
 
       - name: Log in to Docker Hub
         if: github.ref == 'refs/heads/main'
