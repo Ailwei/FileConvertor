@@ -22,6 +22,7 @@ jobs:
           --health-interval 10s 
           --health-timeout 5s 
           --health-retries 5
+
       selenium:
         image: selenium/standalone-chrome:4.20.0
         ports:
@@ -40,20 +41,10 @@ jobs:
       - name: Build frontend image
         run: docker build -t fileconvertor-frontend:latest ./client
 
-      - name: Skip backend tests
-        run: echo "No backend tests yet - skipping"
-
       - name: Run frontend tests
         run: |
-         docker run --rm \
-         -v ${{ github.workspace }}/client:/app \
-         -w /app \
-         node:22 \
-         sh -c "
-         apt-get update && apt-get install -y chromium && \
-         npm install selenium-webdriver chai mocha && \
-         CHROME_PATH=/usr/bin/chromium npx mocha tests/tests.cjs
-         "
+          npm install selenium-webdriver chai mocha
+          npx mocha tests/tests.cjs
 
       - name: Log in to Docker Hub
         if: github.ref == 'refs/heads/main'
